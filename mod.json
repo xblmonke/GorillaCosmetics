@@ -1,0 +1,17 @@
+{
+    "_QPVersion": "0.1.0",
+    "name": "Gorilla Cosmetics",
+    "id": "GorillaCosmetics",
+    "author": "RedBrumbler",
+    "version": "0.1.0",
+    "gameId": "com.AnotherAxiom.GorillaTag",
+    "gameVersion": "1.0.1",
+    "type": "Gameplay",
+    "modFiles": [
+        "libmaptester.so"
+    ],
+    "libraryFiles": [
+        "libbeatsaber-hook_1_0_12.so",
+        "libcustom-types.so"
+    ]
+}

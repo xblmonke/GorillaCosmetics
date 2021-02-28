@@ -5,3 +5,5 @@ obj/
 *.txt
 qpm.shared.json
 *.backup
+*.zip
+*.qmod
