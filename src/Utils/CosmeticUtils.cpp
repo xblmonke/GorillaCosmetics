@@ -51,14 +51,10 @@ namespace GorillaCosmetics::CosmeticUtils
     // il2cpp'd
     bool IsLocalPlayer(Il2CppObject* rig)
     {
-        INFO("isOffline");
         bool isOfflineVRRig = CRASH_UNLESS(il2cpp_utils::GetFieldValue<bool>(rig, "isOfflineVRRig"));
-        INFO("isMyPlayer");
         bool isMyPlayer = CRASH_UNLESS(il2cpp_utils::GetFieldValue<bool>(rig, "isMyPlayer"));
-        INFO("photonView");
         Il2CppObject* photonView = *il2cpp_utils::RunMethod(rig, "get_photonView");
-        INFO("isMine");
-        bool IsMine = photonView ? CRASH_UNLESS(il2cpp_utils::GetFieldValue<bool>(photonView, "IsMine")) : false;
+        bool IsMine = photonView ? CRASH_UNLESS(il2cpp_utils::RunMethod<bool>(photonView, "get_IsMine")) : false;
 
         return isOfflineVRRig || isMyPlayer || IsMine;
     }

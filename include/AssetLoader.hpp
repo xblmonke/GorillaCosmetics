@@ -14,7 +14,8 @@ namespace GorillaCosmetics
 
             static void Load();
             static bool IsLoaded();
-    
+            static void SelectMaterial(std::string name);
+            static void SelectHat(std::string name);
         private:
             static int SelectedHatFromConfig(std::string configString);
             static int SelectedMaterialFromConfig(std::string configString);

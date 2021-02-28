@@ -9,6 +9,9 @@
 
 #include "AssetLoader.hpp"
 #include "Utils/CosmeticUtils.hpp"
+#include "Types/Material/MaterialPreviewButton.hpp"
+
+#include "custom-types/shared/register.hpp"
 
 ModInfo modInfo;
 
@@ -55,6 +58,12 @@ extern "C" void load()
     INSTALL_HOOK_OFFSETLESS(logger, VRRig_Start, il2cpp_utils::FindMethodUnsafe("", "VRRig", "Start", 0));
 
     INFO("Installed Hooks!");
+
+    INFO("Registering custom types...");
+
+    custom_types::Register::RegisterType<MaterialPreviewButton>();
+
+    INFO("Registered custom types!");
 
     INFO("Cosmetics Loaded!");
 }

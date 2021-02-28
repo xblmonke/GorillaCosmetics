@@ -9,7 +9,7 @@ namespace GorillaCosmetics
     class MaterialPreview 
     {
         public:
-            MaterialPreview(Material mat, Vector3 pos, float scale) {};
+            MaterialPreview(Material mat, Vector3 pos, float scale);
             
         private:
             Il2CppObject* gameObject = nullptr;

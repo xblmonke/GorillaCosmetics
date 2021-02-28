@@ -159,7 +159,7 @@ namespace GorillaCosmetics
         {
             Material material = GorillaMaterialObjects[i];
             Vector3 pos = {68.287f, 12.04f - (scale * i), -81.251f};
-            new MaterialPreview(material, pos, scale * 0.85f);
+            MaterialPreview(material, pos, 1.0f);//scale * 0.85f);
         }
 
         // Load Hat Rack Previews
@@ -252,4 +252,16 @@ namespace GorillaCosmetics
     {
         return Loaded;
     }
+
+    void AssetLoader::SelectMaterial(std::string name)
+    {
+        selectedMaterial = SelectedMaterialFromConfig(name);
+    }
+
+    void AssetLoader::SelectHat(std::string name)
+    {
+        selectedHat = SelectedHatFromConfig(name);
+    }
+
+
 }
