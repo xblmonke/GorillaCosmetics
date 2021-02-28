@@ -159,7 +159,7 @@ namespace GorillaCosmetics
         {
             Material material = GorillaMaterialObjects[i];
             Vector3 pos = {68.287f, 12.04f - (scale * i), -81.251f};
-            MaterialPreview(material, pos, 1.0f);//scale * 0.85f);
+            MaterialPreview(material, pos, scale * 0.85f);
         }
 
         // Load Hat Rack Previews
