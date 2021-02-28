@@ -53,9 +53,12 @@ namespace GorillaCosmetics
     {
         if (Loaded || Loading) 
         {
-            ERROR("Tried Loading assets while already loading!");
-            while(Loading);
-            INFO("Done Waiting For Load");
+            if (Loading)
+            {
+                ERROR("Tried Loading assets while already loading!");
+                while(Loading);
+                INFO("Done Waiting For Load");
+            }
             if (Loaded) return;
         }
         Loading = true;
