@@ -7,12 +7,15 @@
 
 #include "config.hpp"
 
+//#include "GorillaMaterialDescriptor.hpp"
 #include "AssetLoader.hpp"
 #include "Utils/CosmeticUtils.hpp"
 #include "Types/Material/MaterialPreviewButton.hpp"
 #include "Types/Hat/HatPreviewButton.hpp"
 
 #include "custom-types/shared/register.hpp"
+
+#include "libil2cpp/il2cpp/libil2cpp/icalls/mscorlib/System/RuntimeTypeHandle.h"
 
 ModInfo modInfo;
 
@@ -64,8 +67,26 @@ extern "C" void load()
 
     custom_types::Register::RegisterType<MaterialPreviewButton>();
     custom_types::Register::RegisterType<HatPreviewButton>();
+    //custom_types::Register::RegisterType<GorillaCosmetics::Data::Descriptors::GorillaMaterialDescriptor>();
 
     INFO("Registered custom types!");
 
     INFO("Cosmetics Loaded!");
+}
+
+void setupFileStructure()
+{
+    std::string FolderPath = "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/" + ID + "/";
+    std::string MirrorLocation = "Mirror/";
+    std::string RackLocation = "Rack/";
+    std::string MaterialsLocation = "Materials/";
+    std::string HatsLocation = "Hats/";
+
+    FileUtils::mkdir(FolderPath);
+    FileUtils::mkdir(FolderPath + MirrorLocation);
+    FileUtils::mkdir(FolderPath + RackLocation);
+    FileUtils::mkdir(FolderPath + MaterialsLocation);
+    FileUtils::mkdir(FolderPath + HatsLocation);
+    FileUtils::mkdir(FolderPath + MaterialsLocation + "Unpacked/");
+    FileUtils::mkdir(FolderPath + HatsLocation + "Unpacked/");
 }

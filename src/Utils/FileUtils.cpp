@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <filesystem>
+#include "beatsaber-hook/shared/utils/utils.h"
 #include "logging.hpp"
 
 using namespace std;
@@ -32,20 +33,6 @@ namespace FileUtils
     {
         INFO("Finding files in %s", filePath.c_str());
         bool foundTheExtension = false; 
-        /*
-        std::filesystem::path path(filePath);
-        std::filesystem::directory_iterator dir(path);
-        for (auto& p : dir)
-        {
-            std::string ext = GetExtension(p.path());
-            if(ext.find(extension) != std::string::npos)
-            {
-                out.push_back(GetFileName(p.path()));
-                foundTheExtension = true; 
-            }
-        }
-        */
-        
         DIR* fileDir = opendir(filePath.data());
         struct dirent *files;
         if(fileDir != NULL)
@@ -71,4 +58,20 @@ namespace FileUtils
         }
         return foundTheExtension;
     }  
+    void mkdir(std::string dir) 
+    { 
+        makeFolder(dir); 
+    }
+
+    void makeFolder(std::string directory)
+    {
+        if (!direxists(directory.c_str()))
+        {
+            int makePath = mkpath(directory.data());
+            if (makePath == -1)
+            {
+                ERROR("Failed to make path %s", directory.c_str());
+            }
+        }
+    }
 }

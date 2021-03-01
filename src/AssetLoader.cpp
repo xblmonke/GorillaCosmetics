@@ -17,7 +17,7 @@
 #include <chrono>
 
 #include <time.h>
-
+#include "Utils/ZipUtils.hpp"
 extern ModInfo modInfo;
 
 static std::optional<std::string> dataDir;
@@ -80,6 +80,8 @@ namespace GorillaCosmetics
         for (auto f : materialNames)
         {
             std::string path = materialPath + "Unpacked/" + f.substr(0, f.find_first_of('.'));
+            ZipUtils::Unzip(materialPath + f, path + "/");
+            
             path += "/package.json";
 
             if (fileexists(path)) MaterialFiles.push_back(path);
@@ -95,7 +97,8 @@ namespace GorillaCosmetics
 
         for (auto f : hatNames)
         {
-            std::string path = hatPath + "/Unpacked/" + f.substr(0, f.find_first_of('.'));
+            std::string path = hatPath + "Unpacked/" + f.substr(0, f.find_first_of('.'));
+            ZipUtils::Unzip(hatPath + f, path + "/");
             path += "/package.json";
 
             if (fileexists(path)) HatFiles.push_back(path);
