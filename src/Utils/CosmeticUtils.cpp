@@ -68,24 +68,33 @@ namespace GorillaCosmetics::CosmeticUtils
             // default mat
             Material material = AssetLoader::SelectedMaterial();
             Il2CppObject* theMatObj = material.get_material();
+            Il2CppObject* mainSkin = CRASH_UNLESS(il2cpp_utils::GetFieldValue(rig, "mainSkin"));
+            Il2CppObject* instantiatedMat = nullptr;
             if (theMatObj)
             {
                 Il2CppObject* renderer = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(theMatObj, "GetComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("UnityEngine", "Renderer")}));
                 Il2CppObject* originalMat = CRASH_UNLESS(il2cpp_utils::RunMethod(renderer, "get_material"));
-                Il2CppObject* instantiatedMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", originalMat));
-
-                if (material.get_config().get_customColors())
-                {
-                    float r = CRASH_UNLESS(il2cpp_utils::RunMethod<float>("UnityEngine", "PlayerPrefs", "GetFloat", il2cpp_utils::createcsstr("redValue")));
-                    float g = CRASH_UNLESS(il2cpp_utils::RunMethod<float>("UnityEngine", "PlayerPrefs", "GetFloat", il2cpp_utils::createcsstr("greenValue")));
-                    float b = CRASH_UNLESS(il2cpp_utils::RunMethod<float>("UnityEngine", "PlayerPrefs", "GetFloat", il2cpp_utils::createcsstr("blueValue")));
-                    Color color = {r, g, b, 1.0f};
-                    CRASH_UNLESS(il2cpp_utils::RunMethod(instantiatedMat, "set_color", color));
-                }
-
-                Il2CppObject* mainSkin = CRASH_UNLESS(il2cpp_utils::GetFieldValue(rig, "mainSkin"));
-                CRASH_UNLESS(il2cpp_utils::RunMethod(mainSkin, "set_material", instantiatedMat));
+                instantiatedMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", originalMat));
             }
+            else // default material time boi
+            {
+                INFO("Material was nullptr, setting default");
+                // Resources.Load<Material>("objects/treeroom/materials/lightfur");
+                Il2CppObject* originalMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Resources", "Load", il2cpp_utils::createcsstr("objects/treeroom/materials/lightfur")));
+                instantiatedMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", originalMat));
+            }
+
+            if (material.get_config().get_customColors())
+            {
+                INFO("Material Had custom colors, setting them");
+                float r = CRASH_UNLESS(il2cpp_utils::RunMethod<float>("UnityEngine", "PlayerPrefs", "GetFloat", il2cpp_utils::createcsstr("redValue")));
+                float g = CRASH_UNLESS(il2cpp_utils::RunMethod<float>("UnityEngine", "PlayerPrefs", "GetFloat", il2cpp_utils::createcsstr("greenValue")));
+                float b = CRASH_UNLESS(il2cpp_utils::RunMethod<float>("UnityEngine", "PlayerPrefs", "GetFloat", il2cpp_utils::createcsstr("blueValue")));
+                Color color = {r, g, b, 1.0f};
+                CRASH_UNLESS(il2cpp_utils::RunMethod(instantiatedMat, "set_color", color));
+            }
+
+            CRASH_UNLESS(il2cpp_utils::RunMethod(mainSkin, "set_material", instantiatedMat));
         }
         else if (materialIndex > 0 && (IsLocalPlayer(rig) || config.applyInfectedMaterialsToOtherPlayers))
         {
@@ -129,9 +138,10 @@ namespace GorillaCosmetics::CosmeticUtils
         if (IsLocalPlayer(rig) || config.applyHatsToOtherPlayers)
         {
             Hat hat = AssetLoader::SelectedHat();
-            Il2CppObject* theHat = hat.get_hat();
-            if (theHat)
+            std::string name = hat.get_descriptor().get_name();
+            if (name != "None")
             {
+                Il2CppObject* theHat = hat.get_hat();
                 Il2CppObject* hatObject = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", theHat));
                 CRASH_UNLESS(il2cpp_utils::RunMethod(hatObject, "set_name", hatName));
                 

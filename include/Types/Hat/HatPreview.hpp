@@ -8,8 +8,10 @@ namespace GorillaCosmetics
     class HatPreview 
     {
         public:
-            HatPreview(Hat hat, Il2CppObject* collider) {};
+            HatPreview(Hat hat, Il2CppObject* collider);
             
         private:
+            Il2CppObject* gameObject = nullptr;
+            
     };
 }

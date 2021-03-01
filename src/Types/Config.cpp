@@ -4,8 +4,8 @@ namespace GorillaCosmetics
 {
     Config::Config(rapidjson::Value& val)
     {
-        customColors = val["customColors"].GetBool();
-        disableInPublicLobbies = val["disableInPublicLobbies"].GetBool();
+        customColors = val.HasMember("customColors") ? val["customColors"].GetBool() : true;
+        disableInPublicLobbies = val.HasMember("disableInPublicLobbies") ? val["disableInPublicLobbies"].GetBool() : false;
     }
 
     bool Config::get_customColors() const

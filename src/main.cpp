@@ -10,6 +10,7 @@
 #include "AssetLoader.hpp"
 #include "Utils/CosmeticUtils.hpp"
 #include "Types/Material/MaterialPreviewButton.hpp"
+#include "Types/Hat/HatPreviewButton.hpp"
 
 #include "custom-types/shared/register.hpp"
 
@@ -62,6 +63,7 @@ extern "C" void load()
     INFO("Registering custom types...");
 
     custom_types::Register::RegisterType<MaterialPreviewButton>();
+    custom_types::Register::RegisterType<HatPreviewButton>();
 
     INFO("Registered custom types!");
 

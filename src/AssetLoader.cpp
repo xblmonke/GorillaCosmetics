@@ -12,6 +12,10 @@
 #include "beatsaber-hook/shared/utils/utils.h"
 #include "beatsaber-hook/shared/utils/typedefs.h"
 
+#include <algorithm>
+#include <random>
+#include <chrono>
+
 extern ModInfo modInfo;
 
 static std::optional<std::string> dataDir;
@@ -61,6 +65,7 @@ namespace GorillaCosmetics
             }
             if (Loaded) return;
         }
+        
         Loading = true;
         std::string folder = FolderPath;
         INFO("Loading things from %s", folder.c_str());
@@ -95,7 +100,7 @@ namespace GorillaCosmetics
             else ERROR("File '%s' Did not exist!", path.c_str());
         }
         
-        GorillaHatObjects.push_back(Hat(folder + "default.json"));
+        GorillaHatObjects.push_back(Hat(folder + "None/package.json"));
         LoadItems<Hat>(HatFiles, GorillaHatObjects);
 
         // Parse Configs
@@ -120,6 +125,8 @@ namespace GorillaCosmetics
             CRASH_UNLESS(il2cpp_utils::RunMethod(mirror, "DontDestroyOnLoad", mirror));
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
         
+        //Il2CppObject* gameObject = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "GameObject", "CreatePrimitive", 0));
+
         // Load Hat Rack
         Il2CppObject* HatRack = nullptr;
         auto* rackLoader = new CosmeticsLoader::CosmeticLoader(folder + RackLocation + "package.json", [&](std::string name, Il2CppObject* rack){
@@ -161,35 +168,51 @@ namespace GorillaCosmetics
         for (int i = 0; i < GorillaMaterialObjects.size(); i++)
         {
             Material material = GorillaMaterialObjects[i];
-            Vector3 pos = {68.287f, 12.04f - (scale * i), -81.251f};
+            Vector3 pos = {-68.287f, 12.04f - (scale * i), -81.251f};
             MaterialPreview(material, pos, scale * 0.85f);
         }
 
         // Load Hat Rack Previews
         Array<Il2CppObject*>* hatPosColliders = CRASH_UNLESS(il2cpp_utils::RunGenericMethod<Array<Il2CppObject*>*>(HatRack, "GetComponentsInChildren", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("UnityEngine", "Collider")}));
+        int hatCount = GorillaHatObjects.size();
         
+        std::vector<int> index = {};
+        for (int i = 0; i < (hatCount >= 6 ? 6 : hatCount); i++) index.push_back(i);
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+        shuffle (index.begin(), index.end(), std::default_random_engine(seed));
+
         /* Skipping randomizing order because quest
         Collider[] hatPosColliders = HatRack.transform.GetComponentsInChildren<Collider>();
         System.Random random = new System.Random();
         Collider[] RandomColliderArray = hatPosColliders.OrderBy(x => random.Next()).ToArray();
         */
-        int hatCount = GorillaHatObjects.size();
         for (int i = 0; i < (hatCount >= 6 ? 6 : hatCount); i++)
         {
-            Hat hat = GorillaHatObjects[i];
-            Il2CppObject* collider = hatPosColliders->values[i];
-            new HatPreview(hat, collider);
+            int j = index[i];
+            INFO("index is %d at %d", j, i);
+            Hat hat = GorillaHatObjects[j];
+            Il2CppObject* collider = hatPosColliders->values[j];
+            HatPreview(hat, collider);
         }
 
         // Load Hat Rack Preview Again, if needed
         if(HatRack2)
         {
+            seed = std::chrono::system_clock::now().time_since_epoch().count();
+            index.clear();
+            for (int i = 6; i < (hatCount >= 12 ? 12 : hatCount); i++) index.push_back(i);
+
+            shuffle (index.begin(), index.end(), std::default_random_engine(seed));
+
             Array<Il2CppObject*>* hatPosColliders2 = CRASH_UNLESS(il2cpp_utils::RunGenericMethod<Array<Il2CppObject*>*>(HatRack2, "GetComponentsInChildren", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("UnityEngine", "Collider")}));
             for (int i = 6; i < (hatCount >= 12 ? 12 : hatCount); i++)
             {
-                Hat hat = GorillaHatObjects[i];
-                Il2CppObject* collider = hatPosColliders->values[i - 6];
-                new HatPreview(hat, collider);
+                int j = index[i-6];
+                INFO("index is %d at %d", j, i);
+                Hat hat = GorillaHatObjects[j];
+                Il2CppObject* collider = hatPosColliders->values[j];
+                HatPreview(hat, collider);
             }
         }
 
@@ -265,6 +288,4 @@ namespace GorillaCosmetics
     {
         selectedHat = SelectedHatFromConfig(name);
     }
-
-
 }

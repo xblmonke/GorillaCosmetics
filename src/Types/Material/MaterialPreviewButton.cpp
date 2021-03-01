@@ -15,16 +15,17 @@ void GorillaCosmetics::MaterialPreviewButton::OnTriggerEnter(Il2CppObject* colli
 		
         // do stuff
 		Il2CppObject* theMat = material->get_material();
+        std::string name = material->get_descriptor().get_name();
         if(theMat)
 		{
-			INFO("Swapping to: %s", material->get_descriptor().get_name().c_str());
+			INFO("Swapping to: %s", name.c_str());
 		}
         else
 		{
-			INFO("Swapping to default material");
+			INFO("Swapping to default material, name on default is %s", name.c_str());
 		}
 
-		config.lastActiveMaterial = material->get_descriptor().get_name();
+		config.lastActiveMaterial = name;
 		AssetLoader::SelectMaterial(config.lastActiveMaterial);
         CosmeticUtils::RefreshAllPlayers();
 

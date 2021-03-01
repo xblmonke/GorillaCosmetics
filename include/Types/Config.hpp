@@ -12,7 +12,7 @@ namespace GorillaCosmetics
             bool get_disableInPublicLobbies() const;
 
         protected:
-            bool customColors = false;
+            bool customColors = true;
             bool disableInPublicLobbies = false;
     };
 }
