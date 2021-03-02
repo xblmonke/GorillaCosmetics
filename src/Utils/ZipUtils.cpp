@@ -13,12 +13,14 @@ namespace ZipUtils
             INFO("Directory %s already existed, returning!", dst.c_str());
             return;
         }
+
+        INFO("Unzipping file from %s to %s", src.c_str(), dst.c_str());
         FileUtils::mkdir(dst);
+
         //Open the ZIP archive
         int err = 0;
         zip *z = zip_open(src.c_str(), 0, &err);
         int fileCount = zip_get_num_files(z);
-        INFO("Found %d files in zip", fileCount);
         // we want to unzip each file
         for (int i = 0; i < fileCount; i++)
         {
@@ -28,6 +30,7 @@ namespace ZipUtils
 
             // get file @ index
             zip_stat_index(z, i, 0, &st);
+            INFO("\t Found %s", st.name);
 
             //Alloc memory for its uncompressed contents
             char *contents = new char[st.size];
@@ -36,6 +39,7 @@ namespace ZipUtils
             zip_file *f = zip_fopen_index(z, i, 0);
             zip_fread(f, contents, st.size);
 
+            
             // write file to dst as filename
             std::string filedst = dst + st.name;
             std::ofstream outfile (filedst, std::ofstream::binary);
@@ -44,7 +48,7 @@ namespace ZipUtils
             zip_fclose(f);
             delete[] contents;            
         }
-        
+        INFO("Done Unzipping");
         //And close the archive
         zip_close(z);
     }

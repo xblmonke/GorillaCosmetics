@@ -7,9 +7,10 @@
 
 #include "config.hpp"
 
-//#include "GorillaMaterialDescriptor.hpp"
 #include "AssetLoader.hpp"
 #include "Utils/CosmeticUtils.hpp"
+#include "Utils/ZipUtils.hpp"
+#include "Utils/FileUtils.hpp"
 #include "Types/Material/MaterialPreviewButton.hpp"
 #include "Types/Hat/HatPreviewButton.hpp"
 
@@ -52,6 +53,8 @@ extern "C" void setup(ModInfo& info)
     INFO("Cosmetics Setup!");
 }
 
+void SetupFileStructure();
+
 extern "C" void load()
 {
     Logger& logger = getLogger();
@@ -67,26 +70,49 @@ extern "C" void load()
 
     custom_types::Register::RegisterType<MaterialPreviewButton>();
     custom_types::Register::RegisterType<HatPreviewButton>();
-    //custom_types::Register::RegisterType<GorillaCosmetics::Data::Descriptors::GorillaMaterialDescriptor>();
 
     INFO("Registered custom types!");
+
+    SetupFileStructure();
 
     INFO("Cosmetics Loaded!");
 }
 
-void setupFileStructure()
+void SetupFileStructure()
 {
-    std::string FolderPath = "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/" + ID + "/";
-    std::string MirrorLocation = "Mirror/";
-    std::string RackLocation = "Rack/";
-    std::string MaterialsLocation = "Materials/";
-    std::string HatsLocation = "Hats/";
+    std::string FolderPath = "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/";
+    FolderPath += ID;
+    FolderPath += "/";
+    std::string MirrorLocation = FolderPath + "Mirror/";
+    std::string RackLocation = FolderPath + "Rack/";
+    std::string MaterialsLocation = FolderPath + "Materials/";
+    std::string HatsLocation = FolderPath + "Hats/";
+    std::string NoneLocation = FolderPath + "None/";
 
     FileUtils::mkdir(FolderPath);
-    FileUtils::mkdir(FolderPath + MirrorLocation);
-    FileUtils::mkdir(FolderPath + RackLocation);
-    FileUtils::mkdir(FolderPath + MaterialsLocation);
-    FileUtils::mkdir(FolderPath + HatsLocation);
-    FileUtils::mkdir(FolderPath + MaterialsLocation + "Unpacked/");
-    FileUtils::mkdir(FolderPath + HatsLocation + "Unpacked/");
+    FileUtils::mkdir(MaterialsLocation);
+    FileUtils::mkdir(HatsLocation);
+    FileUtils::mkdir(MaterialsLocation + "Unpacked/");
+    FileUtils::mkdir(HatsLocation + "Unpacked/");
+
+    if (!direxists(RackLocation)) 
+    {
+        std::string rack = FolderPath + "HatRack.hat";
+        ZipUtils::Unzip(rack, RackLocation);
+    }
+    else deletefile(FolderPath + "HatRack");
+
+    if (!direxists(MirrorLocation)) 
+    {
+        std::string mirror = FolderPath + "Mirror.hat";
+        ZipUtils::Unzip(mirror, MirrorLocation);
+    }
+    else deletefile(FolderPath + "Mirror");
+    
+    if (!direxists(NoneLocation)) 
+    {
+        std::string none = FolderPath + "None.hat";
+        ZipUtils::Unzip(none, NoneLocation);
+    }
+    else deletefile(FolderPath + "None");
 }

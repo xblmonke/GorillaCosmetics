@@ -66,8 +66,17 @@ namespace FileUtils
     void makeFolder(std::string directory)
     {
         if (!direxists(directory.c_str()))
-        {
-            int makePath = mkpath(directory.data());
+        {    
+            std::string theDir = "";
+            for (auto c : directory)
+            {
+                if (c == ' ')
+                {
+                theDir += "\\ ";
+                }
+                else theDir += c;
+            }
+            int makePath = mkpath(theDir.data());
             if (makePath == -1)
             {
                 ERROR("Failed to make path %s", directory.c_str());

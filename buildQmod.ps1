@@ -10,7 +10,11 @@ if (-not ($PSVersionTable.PSEdition -eq "Core")) {
 Compress-Archive -Path  "./libs/arm64-v8a/libbeatsaber-hook_1_0_12.so",`
                         "./libs/arm64-v8a/libcustom-types.so",`
                         "./libs/arm64-v8a/libgorillacosmetics.so",`
+                        "./libs/arm64-v8a/libzip.so",`
                         "./ExtraFiles/default.json",`
+                        "./ExtraFiles/Mirror",`
+                        "./ExtraFiles/None",`
+                        "./ExtraFiles/HatRack",`
                         "./mod.json" -DestinationPath "./GorillaCosmetics.zip" -Update
 
 & copy-item -Force "./GorillaCosmetics.zip" "./GorillaCosmetics.qmod"

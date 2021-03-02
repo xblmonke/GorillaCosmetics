@@ -110,8 +110,11 @@ namespace GorillaCosmetics
 
         // Parse Configs
         selectedMaterial = SelectedMaterialFromConfig(config.lastActiveMaterial);
+        if (!selectedMaterial) config.lastActiveMaterial = "";
         selectedInfectedMaterial = SelectedMaterialFromConfig(config.lastActiveInfectedMaterial);
+        if (!selectedInfectedMaterial) config.lastActiveInfectedMaterial = "";
         selectedHat = SelectedHatFromConfig(config.lastActiveHat);
+        if (!selectedHat) config.lastActiveHat = "";
         
         // Load Mirror
 
@@ -169,7 +172,9 @@ namespace GorillaCosmetics
 
 
         // Load Material Previews
-        float scale = (0.8f/GorillaMaterialObjects.size());
+        int matCount = GorillaMaterialObjects.size();
+        int scaleCount = matCount > 6 ? matCount : 6; 
+        float scale = (0.8f/ scaleCount);
         for (int i = 0; i < GorillaMaterialObjects.size(); i++)
         {
             Material material = GorillaMaterialObjects[i];
