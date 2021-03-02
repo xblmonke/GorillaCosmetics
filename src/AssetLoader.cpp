@@ -285,10 +285,12 @@ namespace GorillaCosmetics
     void AssetLoader::SelectMaterial(std::string name)
     {
         selectedMaterial = SelectedMaterialFromConfig(name);
+        SaveConfig();
     }
 
     void AssetLoader::SelectHat(std::string name)
     {
         selectedHat = SelectedHatFromConfig(name);
+        SaveConfig();
     }
 }
