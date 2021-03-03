@@ -31,6 +31,38 @@
         {
             "name": "default.json",
             "destination": "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/GorillaCosmetics/default.json"
+        },
+        {
+            "name": "Amongus.hat",
+            "destination": "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/GorillaCosmetics/Hats/Amongus.hat"
+        },
+        {
+            "name": "Crown.hat",
+            "destination": "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/GorillaCosmetics/Hats/Crown.hat"
+        },
+        {
+            "name": "Top_Hat.hat",
+            "destination": "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/GorillaCosmetics/Hats/Top_Hat.hat"
+        },
+        {
+            "name": "Camo.gmat",
+            "destination": "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/GorillaCosmetics/Materials/Camo.gmat"
+        },
+        {
+            "name": "Gold.gmat",
+            "destination": "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/GorillaCosmetics/Materials/Gold.gmat"
+        },
+        {
+            "name": "Matrix.gmat",
+            "destination": "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/GorillaCosmetics/Materials/Matrix.gmat"
+        },
+        {
+            "name": "Rainbow.gmat",
+            "destination": "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/GorillaCosmetics/Materials/Rainbow.gmat"
+        },
+        {
+            "name": "Unity_Default_Material.gmat",
+            "destination": "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/GorillaCosmetics/Materials/Unity_Default_Material.gmat"
         }
     ]
 }

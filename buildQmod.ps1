@@ -15,6 +15,14 @@ Compress-Archive -Path  "./libs/arm64-v8a/libbeatsaber-hook_1_0_12.so",`
                         "./ExtraFiles/Mirror",`
                         "./ExtraFiles/None",`
                         "./ExtraFiles/HatRack",`
+                        "./ExtraFiles/Hats/Amongus.hat",`
+                        "./ExtraFiles/Hats/Crown.hat",`
+                        "./ExtraFiles/Hats/Top_Hat.hat",`
+                        "./ExtraFiles/Materials/Camo.gmat",`
+                        "./ExtraFiles/Materials/Gold.gmat",`
+                        "./ExtraFiles/Materials/Matrix.gmat",`
+                        "./ExtraFiles/Materials/Rainbow.gmat",`
+                        "./ExtraFiles/Materials/Unity_Default_Material.gmat",`
                         "./mod.json" -DestinationPath "./GorillaCosmetics.zip" -Update
 
 & copy-item -Force "./GorillaCosmetics.zip" "./GorillaCosmetics.qmod"
