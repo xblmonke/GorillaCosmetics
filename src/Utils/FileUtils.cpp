@@ -24,12 +24,12 @@ namespace FileUtils
 
     string GetExtension(string path)
     {
-        if(path.find_last_of(".") != std::string::npos)
+        if(path.find_last_of(".") != string::npos)
             return path.substr(path.find_last_of(".")+1);
         return "";
     }
 
-    bool GetFilesInFolderPath(std::string extension, std::string filePath, std::vector<std::string>& out)
+    bool GetFilesInFolderPath(string extension, string filePath, vector<string>& out)
     {
         INFO("Finding files in %s", filePath.c_str());
         bool foundTheExtension = false; 
@@ -45,10 +45,10 @@ namespace FileUtils
                     ERROR("File name was nullptr, skipping...");
                     continue;
                 }
-                std::string fileName(nameptr);
+                string fileName(nameptr);
                 if (fileName == "." || fileName == "..") continue;
-                std::string foundExtension = GetExtension(fileName);
-                if(foundExtension.find(extension) != std::string::npos)
+                string foundExtension = GetExtension(fileName);
+                if(foundExtension.find(extension) != string::npos)
                 {
                     out.push_back(fileName);
                     foundTheExtension = true; 
@@ -58,16 +58,16 @@ namespace FileUtils
         }
         return foundTheExtension;
     }  
-    void mkdir(std::string dir) 
+    void mkdir(string dir) 
     { 
         makeFolder(dir); 
     }
 
-    void makeFolder(std::string directory)
+    void makeFolder(string directory)
     {
         if (!direxists(directory.c_str()))
         {    
-            std::string theDir = "";
+            string theDir = "";
             for (auto c : directory)
             {
                 if (c == ' ')
