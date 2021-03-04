@@ -3,6 +3,7 @@
 #include "Types/Material/MaterialPreviewButton.hpp"
 #include "beatsaber-hook/shared/utils/utils.h"
 #include "beatsaber-hook/shared/utils/typedefs.h"
+#include "typedefs.h"
 
 namespace GorillaCosmetics
 {

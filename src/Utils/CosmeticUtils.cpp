@@ -4,6 +4,7 @@
 #include "Types/Hat/Hat.hpp"
 #include "config.hpp"
 #include "logging.hpp"
+#include "typedefs.h"
 
 #include "beatsaber-hook/shared/config/config-utils.hpp"
 #include "beatsaber-hook/shared/utils/utils.h"

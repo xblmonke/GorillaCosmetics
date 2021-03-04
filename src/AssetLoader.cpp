@@ -18,6 +18,8 @@
 
 #include <time.h>
 #include "Utils/ZipUtils.hpp"
+#include "typedefs.h"
+
 extern ModInfo modInfo;
 
 static std::optional<std::string> dataDir;
@@ -158,7 +160,7 @@ namespace GorillaCosmetics
         Il2CppObject* HatRack2 = nullptr;
         if(GorillaHatObjects.size() > 6)
         {
-            HatRack2 = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Instantiate", "Instantiate", HatRack));
+            HatRack2 = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", HatRack));
             Il2CppObject* transform = CRASH_UNLESS(il2cpp_utils::RunMethod(HatRack2, "get_transform"));
 
             Vector3 pos = {-67.895f, 11.511f, -80.41f};
@@ -214,7 +216,7 @@ namespace GorillaCosmetics
                 int j = index[i-6];
                 INFO("index is %d at %d", j, i);
                 Hat hat = GorillaHatObjects[j];
-                Il2CppObject* collider = hatPosColliders->values[i-6];
+                Il2CppObject* collider = hatPosColliders2->values[i-6];
                 HatPreview(hat, collider);
             }
         }
