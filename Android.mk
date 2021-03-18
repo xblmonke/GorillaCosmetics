@@ -56,6 +56,6 @@ LOCAL_SHARED_LIBRARIES += libzip
 LOCAL_SHARED_LIBRARIES += beatsaber-hook_1_1_2
 LOCAL_SHARED_LIBRARIES += custom-types
 LOCAL_LDLIBS += -llog
-LOCAL_CFLAGS += -I'extern/libil2cpp/il2cpp/libil2cpp' -isystem 'extern' -I'extern/codegen/include' -DID='"GorillaCosmetics"' -DVERSION='"0.1.0"' -I'./shared' -I'./extern' -Wno-inaccessible-base
+LOCAL_CFLAGS += -I'extern/libil2cpp/il2cpp/libil2cpp' -isystem 'extern' -I'extern/codegen/include' -DID='"GorillaCosmetics"' -DVERSION='"1.0.2"' -I'./shared' -I'./extern' -Wno-inaccessible-base
 LOCAL_C_INCLUDES += ./include ./src
 include $(BUILD_SHARED_LIBRARY)

@@ -12,7 +12,12 @@ void GorillaCosmetics::MaterialPreviewButton::OnTriggerEnter(Il2CppObject* colli
     if (handIndicator)
 	{
 		Il2CppObject* component = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(collider, "GetComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("", "GorillaTriggerColliderHandIndicator")}));
-		
+		if (!material) 
+        {
+            ERROR("Material Was Nullptr, returning");
+            return;
+        }
+        
         // do stuff
 		Il2CppObject* theMat = material->get_material();
         std::string name = material->get_descriptor().get_name();

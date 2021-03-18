@@ -16,6 +16,7 @@ namespace GorillaCosmetics
 
             void Load();
             Hat(std::string path);
+
             const Config& get_config() const;
             const Descriptor& get_descriptor() const;
             const HatManifest& get_manifest() const;

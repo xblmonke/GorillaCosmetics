@@ -12,7 +12,12 @@ void GorillaCosmetics::HatPreviewButton::OnTriggerEnter(Il2CppObject* collider)
     if (handIndicator)
 	{
 		Il2CppObject* component = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(collider, "GetComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("", "GorillaTriggerColliderHandIndicator")}));
-		
+		if (!hat)
+        {
+            ERROR("Hat Was Nullptr, returning");
+            return;
+        }
+        
         // do stuff
 		Il2CppObject* theHat = hat->get_hat();
         std::string name = hat->get_descriptor().get_name();
