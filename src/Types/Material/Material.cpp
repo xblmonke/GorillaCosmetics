@@ -4,6 +4,8 @@
 
 using namespace CosmeticsLoader;
 
+extern Logger& getLogger();
+
 namespace GorillaCosmetics
 {
     Material::Material(std::string path) : manifest(MaterialManifest(path)) {};
@@ -13,6 +15,7 @@ namespace GorillaCosmetics
         CosmeticLoader<MaterialManifest>* loader = new CosmeticLoader<MaterialManifest>(manifest, [&, loader](std::string name , Il2CppObject* obj){
             INFO("Loaded Material %s", this->manifest.get_descriptor().get_name().c_str());            
             this->object = obj;
+            il2cpp_utils::RunMethod(obj, "SetActive", false);
             //delete(loader);
         }, "_Material", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
     }
@@ -34,7 +37,6 @@ namespace GorillaCosmetics
     
     Il2CppObject* Material::get_material()
     {
-        if (!object) ERROR("Asked for Material object but it was nullptr!");
         return object;
     }
 }

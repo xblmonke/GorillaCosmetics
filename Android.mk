@@ -18,17 +18,11 @@ TARGET_ARCH_ABI := $(APP_ABI)
 
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
-# Creating prebuilt for dependency: beatsaber-hook - version: 1.1.2
+# Creating prebuilt for dependency: beatsaber-hook - version: 1.2.3
 include $(CLEAR_VARS)
 LOCAL_MODULE := beatsaber-hook_1_1_2
 LOCAL_EXPORT_C_INCLUDES := extern/beatsaber-hook
 LOCAL_SRC_FILES := extern/libbeatsaber-hook_1_1_2.so
-include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuild for dependency: libzip - version 1.2.0
-include $(CLEAR_VARS)
-LOCAL_MODULE := libzip
-LOCAL_EXPORT_C_INCLUDES := extern/libzip
-LOCAL_SRC_FILES := extern/libzip.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: modloader - version: 1.0.4
 include $(CLEAR_VARS)
@@ -36,11 +30,23 @@ LOCAL_MODULE := modloader
 LOCAL_EXPORT_C_INCLUDES := extern/modloader
 LOCAL_SRC_FILES := extern/libmodloader.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: custom-types - version: 0.4.7
+# Creating prebuilt for dependency: custom-types - version: 0.5.1
 include $(CLEAR_VARS)
 LOCAL_MODULE := custom-types
 LOCAL_EXPORT_C_INCLUDES := extern/custom-types
 LOCAL_SRC_FILES := extern/libcustom-types.so
+include $(PREBUILT_SHARED_LIBRARY)
+# Creating prebuilt for dependency: zip - version: 1.7.3
+include $(CLEAR_VARS)
+LOCAL_MODULE := libzip
+LOCAL_EXPORT_C_INCLUDES := extern/zip
+LOCAL_SRC_FILES := extern/libzip.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := cosmeticsloader
+LOCAL_EXPORT_C_INCLUDES := extern/cosmeticsloader
+LOCAL_SRC_FILES := extern/libquestcosmeticloader.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 # If you would like to use more shared libraries (such as custom UI, utils, or more) add them here, following the format above.
@@ -55,7 +61,8 @@ LOCAL_SHARED_LIBRARIES += modloader
 LOCAL_SHARED_LIBRARIES += libzip
 LOCAL_SHARED_LIBRARIES += beatsaber-hook_1_1_2
 LOCAL_SHARED_LIBRARIES += custom-types
+LOCAL_SHARED_LIBRARIES += cosmeticsloader
 LOCAL_LDLIBS += -llog
-LOCAL_CFLAGS += -I'extern/libil2cpp/il2cpp/libil2cpp' -isystem 'extern' -I'extern/codegen/include' -DID='"GorillaCosmetics"' -DVERSION='"1.0.2"' -I'./shared' -I'./extern' -Wno-inaccessible-base
+LOCAL_CFLAGS += -I'extern/libil2cpp/il2cpp/libil2cpp' -isystem 'extern' -I'extern/codegen/include' -DID='"GorillaCosmetics"' -DVERSION='"1.1.0"' -I'./shared' -I'./extern' -Wno-inaccessible-base -Wno-invalid-offsetof
 LOCAL_C_INCLUDES += ./include ./src
 include $(BUILD_SHARED_LIBRARY)

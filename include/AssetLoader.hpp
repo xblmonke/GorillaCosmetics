@@ -9,16 +9,19 @@ namespace GorillaCosmetics
     {
         public:
             static Material SelectedMaterial();
+            static Material get_mat(int index);
             static Material SelectedInfectedMaterial();
             static Hat SelectedHat();
+            static Hat get_hat(int index);
 
             static void Load();
             static bool IsLoaded();
             static void SelectMaterial(std::string name);
             static void SelectHat(std::string name);
-        private:
+
             static int SelectedHatFromConfig(std::string configString);
             static int SelectedMaterialFromConfig(std::string configString);
+        private:
 
             static inline bool Loaded = false;
             static inline bool Loading = false;

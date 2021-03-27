@@ -13,6 +13,7 @@ namespace GorillaCosmetics
         CosmeticLoader<HatManifest>* loader = new CosmeticLoader<HatManifest>(manifest, [&, loader](std::string name , Il2CppObject* obj){
             INFO("Loaded Hat %s", this->manifest.get_descriptor().get_name().c_str());            
             this->object = obj;
+            il2cpp_utils::RunMethod(obj, "SetActive", false);
             //delete(loader);
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
     }
@@ -34,7 +35,6 @@ namespace GorillaCosmetics
 
     Il2CppObject* Hat::get_hat()
     {
-        if (!object) ERROR("Asked for hat object but it was nullptr!");
         return object;
     }
 }

@@ -19,30 +19,36 @@ GorillaCosmetics::HatPreview::HatPreview(Hat hat, Il2CppObject* collider)
     }
     else // fake hat time
     {
-        std::string path = "/sdcard/ModData/com.AnotherAxiom.GorillaTag/GorillaCosmetics/None/package.json";
+        std::string path = "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/GorillaCosmetics/None";
         new CosmeticLoader(path, [&](std::string name, Il2CppObject* obj){
             gameObject = obj;
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
     }
-
+    if (!gameObject)
+    {
+        ERROR("gameObject was nullptr!");
+        return;
+    }
+    
     INFO("Getting transform");
+    il2cpp_utils::RunMethod(gameObject, "SetActive", true);
     Il2CppObject* transform = run(gameObject, "get_transform");
     Il2CppObject* colliderTransform = run(collider, "get_transform");
+    il2cpp_utils::RunMethod(transform, "SetParent", colliderTransform);
     Il2CppObject* colliderGO = run(collider, "get_gameObject");
 
+    Vector3 zero = {0.0f, 0.0f, 0.0f};
     Vector3 pos = CRASH_UNLESS(il2cpp_utils::RunMethod<Vector3>(colliderTransform, "get_position"));
     Quaternion rot = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>(colliderTransform, "get_rotation"));
-    Vector3 scale = {0.25f, 0.25f, 0.25f};
+    Vector3 one = {1.0f, 1.0f, 1.0f};
 
-    run(transform, "set_localScale", scale);
+    run(transform, "set_localScale", one);
 
     //run(transform, "SetParent", colliderTransform);
 
     run(gameObject, "set_layer", 18);
-    run(transform, "set_position", pos);
+    run(transform, "set_localPosition", zero);
     run(transform, "set_rotation", rot);
-    
-    
     run(gameObject, "DontDestroyOnLoad", gameObject);
 
     run(collider, "set_isTrigger", true);
