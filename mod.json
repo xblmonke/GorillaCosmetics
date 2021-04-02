@@ -1,21 +1,21 @@
 {
-    "_QPVersion": "0.1.0",
+    "_QPVersion": "0.1.1",
     "name": "Gorilla Cosmetics",
     "id": "GorillaCosmetics",
     "author": "RedBrumbler",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "packageId": "com.AnotherAxiom.GorillaTag",
-    "packageVersion": "1.0.3",
+    "packageVersion": "1.0.4",
     "type": "Cosmetic",
     "modFiles": [
         "libgorillacosmetics.so"
     ],
     "libraryFiles": [
-        "libbeatsaber-hook_1_1_2.so",
+        "libbeatsaber-hook_1_2_4.so",
         "libbeatsaber-hook_1_2_3.so",
         "libcustom-types.so",
         "libzip.so",
-        "libquestcosmeticloader.so"
+        "libquest-cosmetic-loader_0_1_1.so"
     ],
     "fileCopies": [
         {

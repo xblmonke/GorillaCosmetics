@@ -1,8 +1,8 @@
 #pragma once
 #include "beatsaber-hook/shared/utils/utils.h"
 #include "Types/Config.hpp"
-#include "cosmeticsloader/shared/Descriptor.hpp"
-#include "cosmeticsloader/shared/Manifest.hpp"
+#include "quest-cosmetic-loader/shared/Descriptor.hpp"
+#include "quest-cosmetic-loader/shared/Manifest.hpp"
 
 namespace GorillaCosmetics
 {

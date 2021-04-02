@@ -1,9 +1,5 @@
 #include "logging.hpp"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
-#include "cosmeticsloader/shared/CosmeticLoader.hpp"
-#include "cosmeticsloader/shared/Config.hpp"
-#include "cosmeticsloader/shared/Descriptor.hpp"
-#include "cosmeticsloader/shared/Manifest.hpp"
 
 #include "config.hpp"
 
@@ -20,6 +16,14 @@
 #include "custom-types/shared/register.hpp"
 
 #include "libil2cpp/il2cpp/libil2cpp/icalls/mscorlib/System/RuntimeTypeHandle.h"
+#include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
+
+#include "PlayerCosmeticsList.hpp"
+
+#include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
+#include "beatsaber-hook/shared/rapidjson/include/rapidjson/prettywriter.h"
+#include "beatsaber-hook/shared/rapidjson/include/rapidjson/stringbuffer.h"
+
 
 typedef struct PhotonMessageInfo {
     int timeInt;
@@ -35,23 +39,18 @@ ModInfo modInfo;
 using namespace CosmeticsLoader;
 using namespace GorillaCosmetics;
 
-typedef CosmeticsLoader::Manifest<CosmeticsLoader::Config, CosmeticsLoader::Descriptor> MapManifest;
-
-CosmeticLoader<MapManifest>* loader = nullptr;
-
-std::string persistentPath;
-
 MAKE_HOOK_OFFSETLESS(VRRig_ChangeMaterial, void, Il2CppObject* self, int materialIndex)
 {
     VRRig_ChangeMaterial(self, materialIndex);
-    Il2CppString* faceCS = *il2cpp_utils::GetFieldValue<Il2CppString*>(self, "face");
-    std::string face = faceCS ? to_utf8(csstrtostr(faceCS)) : "";
- 
-    if (face.find("custom:") != std::string::npos)
-    {
-        face.erase(0, 7);
-        CosmeticUtils::ChangeMaterial(self, materialIndex, face);
-    }
+    
+    Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
+    Il2CppObject* owner = *il2cpp_utils::RunMethod(photonView, "get_Owner");
+
+    Il2CppString* UserIDCS = *il2cpp_utils::RunMethod<Il2CppString*>(owner, "get_UserId");
+    std::string UserID = UserIDCS ? to_utf8(csstrtostr(UserIDCS)) : "";
+
+    std::string material = PlayerCosmeticsList::get_material(UserID);
+    CosmeticUtils::ChangeMaterial(self, materialIndex, material);
 }
 
 MAKE_HOOK_OFFSETLESS(VRRig_Start, void, Il2CppObject* self)
@@ -59,8 +58,13 @@ MAKE_HOOK_OFFSETLESS(VRRig_Start, void, Il2CppObject* self)
     VRRig_Start(self);
     GorillaCosmetics::AssetLoader::Load();
 
-    Il2CppString* hatCS = *il2cpp_utils::GetFieldValue<Il2CppString*>(self, "face");
-    std::string hat = hatCS ? to_utf8(csstrtostr(hatCS)) : "";
+    Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
+    Il2CppObject* owner = *il2cpp_utils::RunMethod(photonView, "get_Owner");
+
+    Il2CppString* UserIDCS = *il2cpp_utils::RunMethod<Il2CppString*>(owner, "get_UserId");
+    std::string UserID = UserIDCS ? to_utf8(csstrtostr(UserIDCS)) : "";
+
+    std::string hat = PlayerCosmeticsList::get_hat(UserID);
 
     if (hat.find("custom:") != std::string::npos)
     {
@@ -72,21 +76,40 @@ MAKE_HOOK_OFFSETLESS(VRRig_Start, void, Il2CppObject* self)
     Il2CppString* faceCS = *il2cpp_utils::GetFieldValue<Il2CppString*>(self, "face");
     std::string face = faceCS ? to_utf8(csstrtostr(faceCS)) : "";
     int setMatIndex = CRASH_UNLESS(il2cpp_utils::GetFieldValue<int>(self, "setMatIndex"));
-    if (face.find("custom:") != std::string::npos)
-    {
-        face.erase(0, 7);
-        CosmeticUtils::ChangeMaterial(self, setMatIndex, face);
-    }
+    std::string material = PlayerCosmeticsList::get_material(UserID);
+    CosmeticUtils::ChangeMaterial(self, setMatIndex, material);
 }
 
 MAKE_HOOK_OFFSETLESS(VRRig_UpdateCosmetics, void, Il2CppObject* self, Il2CppString* newBadge, Il2CppString* newFace, Il2CppString* newHat, PhotonMessageInfo info)
 {
-    VRRig_UpdateCosmetics(self, newBadge, newFace, newHat, info);
+    std::string hatString = to_utf8(csstrtostr(newHat));
+    std::string hat = "";
+    std::string material = "default";
+    bool isCustomUpdate = false;
+    
+    if (hatString.find("{") != std::string::npos && hatString.find("}") != std::string::npos)
+    {
+        isCustomUpdate = true;
+        getLogger().info("Found object:\n%s", hatString.c_str());
+        rapidjson::Document d;
+        d.Parse(hatString.c_str());
+        
+        hat = d["hat"].GetString();
+        material = d["material"].GetString();
+
+        Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
+        Il2CppObject* owner = *il2cpp_utils::RunMethod(photonView, "get_Owner");
+
+        Il2CppString* UserIDCS = *il2cpp_utils::RunMethod<Il2CppString*>(owner, "get_UserId");
+        std::string UserID = UserIDCS ? to_utf8(csstrtostr(UserIDCS)) : "";
+        PlayerCosmeticsList::set_player(UserID, hat, material);
+    }
+    else hat = hatString;
+
+    VRRig_UpdateCosmetics(self, newBadge, newFace, il2cpp_utils::createcsstr(hat), info);
+
     std::string badge = to_utf8(csstrtostr(newBadge));
     std::string face = to_utf8(csstrtostr(newFace));
-    std::string hat = to_utf8(csstrtostr(newHat));
-
-    getLogger().info("Normal Update: \n\tHat: %s\n\tBadge: %s\n\tFace: %s", hat.c_str(), badge.c_str(), face.c_str());
 
     Il2CppObject* player = *il2cpp_utils::RunMethod(info.photonView, "get_Owner");
 
@@ -106,11 +129,10 @@ MAKE_HOOK_OFFSETLESS(VRRig_UpdateCosmetics, void, Il2CppObject* self, Il2CppStri
         }
         else CosmeticUtils::ChangeHat(self, "None");
 
-        int setMatIndex = CRASH_UNLESS(il2cpp_utils::GetFieldValue<int>(self, "setMatIndex"));
-        if (face.find("custom:") != std::string::npos)
+        if (isCustomUpdate)
         {
-            face.erase(0, 7);
-            CosmeticUtils::ChangeMaterial(self, setMatIndex, face);
+            int setMatIndex = CRASH_UNLESS(il2cpp_utils::GetFieldValue<int>(self, "setMatIndex"));
+            CosmeticUtils::ChangeMaterial(self, setMatIndex, material);
         }
     }
     else getLogger().error("Player and Owner were not equal");
@@ -118,11 +140,34 @@ MAKE_HOOK_OFFSETLESS(VRRig_UpdateCosmetics, void, Il2CppObject* self, Il2CppStri
 
 MAKE_HOOK_OFFSETLESS(VRRig_LocalUpdateCosmetics, void, Il2CppObject* self, Il2CppString* newBadge, Il2CppString* newFace, Il2CppString* newHat)
 {
-    VRRig_LocalUpdateCosmetics(self, newBadge, newFace, newHat);
+    std::string hatString = to_utf8(csstrtostr(newHat));
+    std::string hat = "";
+    std::string material = "default";
+    bool isCustomUpdate = false;
+    if (hatString.find("{") != std::string::npos && hatString.find("}") != std::string::npos)
+    {
+        isCustomUpdate = true;
+        getLogger().info("Found object:\n%s", hatString.c_str());
+        rapidjson::Document d;
+        d.Parse(hatString.c_str());
+        
+        hat = d["hat"].GetString();
+        material = d["material"].GetString();
+
+        Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
+        Il2CppObject* owner = *il2cpp_utils::RunMethod(photonView, "get_Owner");
+
+        Il2CppString* UserIDCS = *il2cpp_utils::RunMethod<Il2CppString*>(owner, "get_UserId");
+        std::string UserID = UserIDCS ? to_utf8(csstrtostr(UserIDCS)) : "";
+        PlayerCosmeticsList::set_player(UserID, hat, material);
+    }
+    else hat = hatString;
+
+
+    VRRig_LocalUpdateCosmetics(self, newBadge, newFace, il2cpp_utils::createcsstr(hat));
+
     std::string badge = to_utf8(csstrtostr(newBadge));
     std::string face = to_utf8(csstrtostr(newFace));
-    std::string hat = to_utf8(csstrtostr(newHat));
-    getLogger().info("LocalUpdate: \n\tHat: %s\n\tBadge: %s\n\tFace: %s", hat.c_str(), badge.c_str(), face.c_str());
 
     if (hat.find("custom:") != std::string::npos)
     {
@@ -131,12 +176,66 @@ MAKE_HOOK_OFFSETLESS(VRRig_LocalUpdateCosmetics, void, Il2CppObject* self, Il2Cp
     }
     else CosmeticUtils::ChangeHat(self, "None");
 
-    int setMatIndex = CRASH_UNLESS(il2cpp_utils::GetFieldValue<int>(self, "setMatIndex"));
-    if (face.find("custom:") != std::string::npos)
+    if (isCustomUpdate)
     {
-        face.erase(0, 7);
-        CosmeticUtils::ChangeMaterial(self, setMatIndex, face);
+        int setMatIndex = CRASH_UNLESS(il2cpp_utils::GetFieldValue<int>(self, "setMatIndex"));
+        CosmeticUtils::ChangeMaterial(self, setMatIndex, material);
     }
+}
+
+MAKE_HOOK_OFFSETLESS(VRRig_RequestCosmetics, void, Il2CppObject* self, PhotonMessageInfo info)
+{
+    Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
+    bool IsMine = *il2cpp_utils::RunMethod<bool>(photonView, "get_IsMine");
+
+    if (IsMine)
+    {
+        std::string material = config.lastActiveMaterial;
+        Il2CppString* hatCS = *il2cpp_utils::GetFieldValue<Il2CppString*>(self, "hat");
+        Il2CppString* face = *il2cpp_utils::GetFieldValue<Il2CppString*>(self, "face");
+        Il2CppString* badge = *il2cpp_utils::GetFieldValue<Il2CppString*>(self, "badge");
+
+        std::string hat = to_utf8(csstrtostr(hatCS));
+    
+        rapidjson::Document d;
+        d.SetObject();
+        rapidjson::Document::AllocatorType& allocator = d.GetAllocator();
+
+        d.AddMember("hat", rapidjson::Value(hat.c_str(), hat.size(), allocator), allocator);
+        d.AddMember("material", rapidjson::Value(material.c_str(), material.size(), allocator), allocator);
+
+        rapidjson::StringBuffer buffer;
+        buffer.Clear();
+
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+        d.Accept(writer);
+
+        std::string messageString(buffer.GetString(), buffer.GetSize());
+
+        Il2CppString* hatMessage = il2cpp_utils::createcsstr(messageString);
+
+
+        static Il2CppString* methodName = il2cpp_utils::createcsstr("UpdateCosmetics", il2cpp_utils::StringType::Manual);
+        
+        Array<Il2CppObject*>* argsArray = reinterpret_cast<Array<Il2CppObject*>*>(il2cpp_functions::array_new(classof(Il2CppObject*), 3));
+        argsArray->values[0] = (Il2CppObject*)badge;
+        argsArray->values[1] = (Il2CppObject*)face;
+        argsArray->values[2] = (Il2CppObject*)hatMessage;
+        
+        il2cpp_utils::RunMethod(photonView, "RPC", methodName, info.sender, argsArray);
+
+        il2cpp_utils::RunMethod("Photon.Pun", "PhotonNetwork", "SendAllOutgoingCommands");
+    }
+
+    VRRig_RequestCosmetics(self, info);
+}
+
+MAKE_HOOK_OFFSETLESS(VRRig_InitializeNoobMaterial, void, Il2CppObject* self, float red, float green, float blue)
+{
+    VRRig_InitializeNoobMaterial(self, red, green, blue);
+    il2cpp_utils::SetFieldValue(self, "red", red);
+    il2cpp_utils::SetFieldValue(self, "green", green);
+    il2cpp_utils::SetFieldValue(self, "blue", blue);
 }
 
 extern "C" void setup(ModInfo& info)
@@ -159,6 +258,8 @@ extern "C" void load()
     INSTALL_HOOK_OFFSETLESS(logger, VRRig_Start, il2cpp_utils::FindMethodUnsafe("", "VRRig", "Start", 0));
     INSTALL_HOOK_OFFSETLESS(logger, VRRig_LocalUpdateCosmetics, il2cpp_utils::FindMethodUnsafe("", "VRRig", "LocalUpdateCosmetics", 3));
     INSTALL_HOOK_OFFSETLESS(logger, VRRig_UpdateCosmetics, il2cpp_utils::FindMethodUnsafe("", "VRRig", "UpdateCosmetics", 4));
+    INSTALL_HOOK_OFFSETLESS(logger, VRRig_RequestCosmetics, il2cpp_utils::FindMethodUnsafe("", "VRRig", "RequestCosmetics", 1));
+    INSTALL_HOOK_OFFSETLESS(logger, VRRig_InitializeNoobMaterial, il2cpp_utils::FindMethodUnsafe("", "VRRig", "InitializeNoobMaterial", 3));
 
     INFO("Installed Hooks!");
 

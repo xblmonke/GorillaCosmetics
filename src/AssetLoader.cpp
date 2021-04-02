@@ -6,7 +6,7 @@
 #include "Utils/FileUtils.hpp"
 #include "AssetLoader.hpp"
 
-#include "cosmeticsloader/shared/CosmeticLoader.hpp"
+#include "quest-cosmetic-loader/shared/CosmeticLoader.hpp"
 
 #include "Types/Material/MaterialPreview.hpp"
 #include "Types/Hat/HatPreview.hpp"
@@ -120,16 +120,7 @@ namespace GorillaCosmetics
         LoadItems<Hat>(HatFiles, GorillaHatObjects);
 
         // Parse Configs
-        static Il2CppString* matProperty = il2cpp_utils::createcsstr("faceCosmetic", il2cpp_utils::StringType::Manual);
-        Il2CppString* defaultMat = il2cpp_utils::createcsstr("custom:" + config.lastActiveMaterial);
-        Il2CppString* savedMatCS = *il2cpp_utils::RunMethod<Il2CppString*>("UnityEngine", "PlayerPrefs", "GetString", matProperty, defaultMat);
-        std::string savedMat = to_utf8(csstrtostr(savedMatCS));
-        
-        if (savedMat.find("custom:") != std::string::npos)
-        {
-            savedMat.erase(0, 7);
-        }        
-        selectedMaterial = SelectedMaterialFromConfig(savedMat);
+        selectedMaterial = SelectedMaterialFromConfig(config.lastActiveMaterial);
         if (!selectedMaterial) config.lastActiveMaterial = "";
 
         selectedInfectedMaterial = SelectedMaterialFromConfig(config.lastActiveInfectedMaterial);
@@ -214,7 +205,6 @@ namespace GorillaCosmetics
                 Il2CppObject* colliderGO = *il2cpp_utils::RunMethod(collider, "get_gameObject");
                 HatRackSelectorButton* button = *il2cpp_utils::RunGenericMethod<HatRackSelectorButton*>(colliderGO, "AddComponent", std::vector<Il2CppClass*>{classof(HatRackSelectorButton*)});
                 button->selector = rackSelector;
-                INFO("selector ptr: %p, assigned ptr: %p", rackSelector, button->selector);
                 il2cpp_utils::RunMethod(collider, "set_isTrigger", true);
                 il2cpp_utils::RunMethod(colliderGO, "set_layer", 18);
             }
@@ -266,60 +256,7 @@ namespace GorillaCosmetics
         }
 
         rackSelector->UpdateRack();
-        /*
-        // Check if we have enough hats for a second one
-        Il2CppObject* HatRack2 = nullptr;
-        if(GorillaHatObjects.size() > 6)
-        {
-            HatRack2 = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", HatRack));
-            Il2CppObject* transform = CRASH_UNLESS(il2cpp_utils::RunMethod(HatRack2, "get_transform"));
 
-            Vector3 pos = {-67.895f, 11.511f, -80.41f};
-            Vector3 rot = {-90.0f, 0, -68.608f};
-            Quaternion rotation = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>("UnityEngine", "Quaternion", "Euler", rot));
-
-            CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_position", pos));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_rotation", rotation));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(HatRack2, "DontDestroyOnLoad", HatRack2));
-        }
-        
-        // Load Hat Rack Previews
-        Array<Il2CppObject*>* hatPosColliders = CRASH_UNLESS(il2cpp_utils::RunGenericMethod<Array<Il2CppObject*>*>(HatRack, "GetComponentsInChildren", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("UnityEngine", "BoxCollider")}));
-        int hatCount = GorillaHatObjects.size();
-        
-        std::vector<int> index = {};
-        for (int i = 0; i < (hatCount >= 6 ? 6 : hatCount); i++) index.push_back(i);
-        
-        shuffle (index.begin(), index.end(), std::default_random_engine(time(0)));
-
-        for (int i = 0; i < (hatCount >= 6 ? 6 : hatCount); i++)
-        {
-            int j = index[i];
-            INFO("index is %d at %d", j, i);
-            Hat hat = GorillaHatObjects[j];
-            Il2CppObject* collider = hatPosColliders->values[i];
-            HatPreview(hat, collider);
-        }
-
-        // Load Hat Rack Preview Again, if needed
-        if(HatRack2)
-        {
-            index.clear();
-            for (int i = 6; i < (hatCount >= 12 ? 12 : hatCount); i++) index.push_back(i);
-
-            shuffle (index.begin(), index.end(), std::default_random_engine(time(0)));
-
-            Array<Il2CppObject*>* hatPosColliders2 = CRASH_UNLESS(il2cpp_utils::RunGenericMethod<Array<Il2CppObject*>*>(HatRack2, "GetComponentsInChildren", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("UnityEngine", "BoxCollider")}));
-            for (int i = 6; i < (hatCount >= 12 ? 12 : hatCount); i++)
-            {
-                int j = index[i-6];
-                INFO("index is %d at %d", j, i);
-                Hat hat = GorillaHatObjects[j];
-                Il2CppObject* collider = hatPosColliders2->values[i-6];
-                HatPreview(hat, collider);
-            }
-        }
-        */
         // Load Material Previews
         int matCount = GorillaMaterialObjects.size();
         int scaleCount = matCount > 6 ? matCount : 6; 
@@ -354,7 +291,6 @@ namespace GorillaCosmetics
         {
             Material gorillaMaterialObject = GorillaMaterialObjects[i];
             std::string name = toLower(gorillaMaterialObject.get_descriptor().get_name());
-            INFO("Found %s", name.c_str());
             if (name == selectedMatString)
             {
                 return i;
@@ -385,7 +321,6 @@ namespace GorillaCosmetics
                 return i;
             }
         }
-        INFO("Didn't find");
         return 0;
     }
 

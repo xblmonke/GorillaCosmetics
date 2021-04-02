@@ -1,5 +1,5 @@
 #include "Types/Hat/Hat.hpp"
-#include "cosmeticsloader/shared/CosmeticLoader.hpp"
+#include "quest-cosmetic-loader/shared/CosmeticLoader.hpp"
 #include "logging.hpp"
 
 using namespace CosmeticsLoader;

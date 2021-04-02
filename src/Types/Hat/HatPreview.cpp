@@ -2,7 +2,7 @@
 #include "Types/Hat/HatPreviewButton.hpp"
 #include "logging.hpp"
 
-#include "cosmeticsloader/shared/CosmeticLoader.hpp"
+#include "quest-cosmetic-loader/shared/CosmeticLoader.hpp"
 #include "typedefs.h"
 
 #define run(value...) CRASH_UNLESS(il2cpp_utils::RunMethod(value))

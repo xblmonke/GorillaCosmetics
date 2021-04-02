@@ -5,6 +5,11 @@
 #include "config.hpp"
 #include "beatsaber-hook/shared/utils/il2cpp-functions.hpp"
 #include <thread>
+#include "PlayerCosmeticsList.hpp"
+
+#include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
+#include "beatsaber-hook/shared/rapidjson/include/rapidjson/prettywriter.h"
+#include "beatsaber-hook/shared/rapidjson/include/rapidjson/stringbuffer.h"
 
 DEFINE_CLASS(GorillaCosmetics::HatPreviewButton);
 
@@ -69,9 +74,11 @@ void GorillaCosmetics::HatPreviewButton::UpdateHatValue()
 {
     std::string name = hat->get_descriptor().get_name();
     static Il2CppString* propertyName = il2cpp_utils::createcsstr("hatCosmetic", il2cpp_utils::StringType::Manual);
-    Il2CppString* hat;
-    hat = il2cpp_utils::createcsstr("custom:" + name);
-    il2cpp_utils::RunMethod("UnityEngine", "PlayerPrefs", "SetString", propertyName, hat);
+    Il2CppString* hatCS;
+    std::string hatString = "custom:" + name;
+    hatCS = il2cpp_utils::createcsstr(hatString);
+    
+    il2cpp_utils::RunMethod("UnityEngine", "PlayerPrefs", "SetString", propertyName, hatCS);
     il2cpp_utils::RunMethod("UnityEngine", "PlayerPrefs", "Save");
 
     Il2CppObject* gorillaTagger = *il2cpp_utils::RunMethod("", "GorillaTagger", "get_Instance");
@@ -79,9 +86,27 @@ void GorillaCosmetics::HatPreviewButton::UpdateHatValue()
 
     Il2CppString* badge = *il2cpp_utils::GetFieldValue<Il2CppString*>(offlineVRRig, "badge");
     Il2CppString* face = *il2cpp_utils::GetFieldValue<Il2CppString*>(offlineVRRig, "face");
+    
+    rapidjson::Document d;
+    d.SetObject();
+    rapidjson::Document::AllocatorType& allocator = d.GetAllocator();
+
+    d.AddMember("hat", rapidjson::Value(hatString.c_str(), hatString.size(), allocator), allocator);
+    std::string materialString = config.lastActiveMaterial;
+    d.AddMember("material", rapidjson::Value(materialString.c_str(), materialString.size(), allocator), allocator);
+
+    rapidjson::StringBuffer buffer;
+    buffer.Clear();
+
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+    d.Accept(writer);
+    
+    std::string messageString(buffer.GetString(), buffer.GetSize());
+    Il2CppString* hatMessage = il2cpp_utils::createcsstr(messageString);
+
     if (offlineVRRig)
     {
-        il2cpp_utils::RunMethod(offlineVRRig, "LocalUpdateCosmetics", badge, face, hat);
+        il2cpp_utils::RunMethod(offlineVRRig, "LocalUpdateCosmetics", badge, face, hatMessage);
     }
     else
     {
@@ -97,7 +122,7 @@ void GorillaCosmetics::HatPreviewButton::UpdateHatValue()
         Array<Il2CppObject*>* argsArray = reinterpret_cast<Array<Il2CppObject*>*>(il2cpp_functions::array_new(classof(Il2CppObject*), 3));
         argsArray->values[0] = (Il2CppObject*)badge;
         argsArray->values[1] = (Il2CppObject*)face;
-        argsArray->values[2] = (Il2CppObject*)hat;
+        argsArray->values[2] = (Il2CppObject*)hatMessage;
         
         il2cpp_utils::RunMethod(photonView, "RPC", methodName, 0, argsArray);
 
