@@ -37,17 +37,16 @@ GorillaCosmetics::HatPreview::HatPreview(Hat hat, Il2CppObject* collider)
     il2cpp_utils::RunMethod(transform, "SetParent", colliderTransform);
     Il2CppObject* colliderGO = run(collider, "get_gameObject");
 
-    Vector3 zero = {0.0f, 0.0f, 0.0f};
-    Vector3 pos = CRASH_UNLESS(il2cpp_utils::RunMethod<Vector3>(colliderTransform, "get_position"));
+    Vector3 pos = {0.0f, 0.0f, 0.0f};
     Quaternion rot = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>(colliderTransform, "get_rotation"));
-    Vector3 one = {1.0f, 1.0f, 1.0f};
+    Vector3 scale = {0.7f, 0.7f, 0.7f};
 
-    run(transform, "set_localScale", one);
+    run(transform, "set_localScale", scale);
 
     //run(transform, "SetParent", colliderTransform);
 
     run(gameObject, "set_layer", 18);
-    run(transform, "set_localPosition", zero);
+    run(transform, "set_localPosition", pos);
     run(transform, "set_rotation", rot);
     run(gameObject, "DontDestroyOnLoad", gameObject);
 
