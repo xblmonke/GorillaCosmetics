@@ -96,10 +96,10 @@ namespace GorillaCosmetics::CosmeticUtils
             if (material.get_config().get_customColors())
             {
                 INFO("Material Had custom colors, setting them");
-                float r = CRASH_UNLESS(il2cpp_utils::RunMethod<float>("UnityEngine", "PlayerPrefs", "GetFloat", il2cpp_utils::createcsstr("redValue")));
-                float g = CRASH_UNLESS(il2cpp_utils::RunMethod<float>("UnityEngine", "PlayerPrefs", "GetFloat", il2cpp_utils::createcsstr("greenValue")));
-                float b = CRASH_UNLESS(il2cpp_utils::RunMethod<float>("UnityEngine", "PlayerPrefs", "GetFloat", il2cpp_utils::createcsstr("blueValue")));
-                Color color = {r, g, b, 1.0f};
+                Array<Il2CppObject*>* materialsToChangeTo = *il2cpp_utils::GetFieldValue<Array<Il2CppObject*>*>(rig, "materialsToChangeTo");
+                Il2CppObject* mat0 = materialsToChangeTo->values[0];
+                Color color = *il2cpp_utils::RunMethod<Color>(mat0, "get_color");
+                
                 CRASH_UNLESS(il2cpp_utils::RunMethod(instantiatedMat, "set_color", color));
             }
 
@@ -166,10 +166,10 @@ namespace GorillaCosmetics::CosmeticUtils
             if (material.get_config().get_customColors())
             {
                 INFO("Material Had custom colors, setting them");
-                float r = CRASH_UNLESS(il2cpp_utils::GetFieldValue<float>(rig, "red"));
-                float g = CRASH_UNLESS(il2cpp_utils::GetFieldValue<float>(rig, "green"));
-                float b = CRASH_UNLESS(il2cpp_utils::GetFieldValue<float>(rig, "blue"));
-                Color color = {r, g, b, 1.0f};
+                Array<Il2CppObject*>* materialsToChangeTo = *il2cpp_utils::GetFieldValue<Array<Il2CppObject*>*>(rig, "materialsToChangeTo");
+                Il2CppObject* mat0 = materialsToChangeTo->values[0];
+                Color color = *il2cpp_utils::RunMethod<Color>(mat0, "get_color");
+
                 CRASH_UNLESS(il2cpp_utils::RunMethod(instantiatedMat, "set_color", color));
             }
 
@@ -197,9 +197,10 @@ namespace GorillaCosmetics::CosmeticUtils
         {
             Hat hat = AssetLoader::SelectedHat();
             std::string name = hat.get_descriptor().get_name();
-            if (name != "None")
+            if (name != "None" && name != "none")
             {
                 Il2CppObject* theHat = hat.get_hat();
+                if (!theHat) return;
                 Il2CppObject* hatObject = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", theHat));
                 il2cpp_utils::RunMethod(hatObject, "SetActive", true);
                 CRASH_UNLESS(il2cpp_utils::RunMethod(hatObject, "set_name", hatName));
@@ -250,9 +251,10 @@ namespace GorillaCosmetics::CosmeticUtils
         int index = AssetLoader::SelectedHatFromConfig(hatName);
         Hat hat = AssetLoader::get_hat(index);
         std::string name = hat.get_descriptor().get_name();
-        if (name != "None")
+        if (name != "None" && name != "none")
         {
             Il2CppObject* theHat = hat.get_hat();
+            if (!theHat) return;
             Il2CppObject* hatObject = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", theHat));
             il2cpp_utils::RunMethod(hatObject, "SetActive", true);
             CRASH_UNLESS(il2cpp_utils::RunMethod(hatObject, "set_name", hatTransformName));

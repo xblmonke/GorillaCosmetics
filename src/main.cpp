@@ -233,9 +233,20 @@ MAKE_HOOK_OFFSETLESS(VRRig_RequestCosmetics, void, Il2CppObject* self, PhotonMes
 MAKE_HOOK_OFFSETLESS(VRRig_InitializeNoobMaterial, void, Il2CppObject* self, float red, float green, float blue)
 {
     VRRig_InitializeNoobMaterial(self, red, green, blue);
+    /*
     il2cpp_utils::SetFieldValue(self, "red", red);
     il2cpp_utils::SetFieldValue(self, "green", green);
     il2cpp_utils::SetFieldValue(self, "blue", blue);
+    */
+    Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
+    Il2CppObject* owner = *il2cpp_utils::RunMethod(photonView, "get_Owner");
+
+    Il2CppString* UserIDCS = *il2cpp_utils::RunMethod<Il2CppString*>(owner, "get_UserId");
+    std::string UserID = UserIDCS ? to_utf8(csstrtostr(UserIDCS)) : "";
+
+    std::string material = PlayerCosmeticsList::get_material(UserID);
+    int setMatIndex = CRASH_UNLESS(il2cpp_utils::GetFieldValue<int>(self, "setMatIndex"));
+    CosmeticUtils::ChangeMaterial(self, setMatIndex, material);
 }
 
 extern "C" void setup(ModInfo& info)

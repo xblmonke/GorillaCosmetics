@@ -63,6 +63,6 @@ LOCAL_SHARED_LIBRARIES += beatsaber-hook_1_2_4
 LOCAL_SHARED_LIBRARIES += custom-types
 LOCAL_SHARED_LIBRARIES += quest-cosmetic-loader_0_1_1
 LOCAL_LDLIBS += -llog
-LOCAL_CFLAGS += -I'extern/libil2cpp/il2cpp/libil2cpp' -isystem 'extern' -I'extern/codegen/include' -DID='"GorillaCosmetics"' -DVERSION='"1.2.0"' -I'./shared' -I'./extern' -Wno-inaccessible-base -Wno-invalid-offsetof
+LOCAL_CFLAGS += -I'extern/libil2cpp/il2cpp/libil2cpp' -isystem 'extern' -I'extern/codegen/include' -DID='"GorillaCosmetics"' -DVERSION='"1.2.1"' -I'./shared' -I'./extern' -Wno-inaccessible-base -Wno-invalid-offsetof
 LOCAL_C_INCLUDES += ./include ./src
 include $(BUILD_SHARED_LIBRARY)
