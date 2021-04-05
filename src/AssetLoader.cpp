@@ -119,13 +119,14 @@ namespace GorillaCosmetics
         GorillaHatObjects.push_back(Hat(folder + "None"));
         LoadItems<Hat>(HatFiles, GorillaHatObjects);
 
-        // Parse Configs
+        // Get Values from the config
         selectedMaterial = SelectedMaterialFromConfig(config.lastActiveMaterial);
         if (!selectedMaterial) config.lastActiveMaterial = "";
 
         selectedInfectedMaterial = SelectedMaterialFromConfig(config.lastActiveInfectedMaterial);
         if (!selectedInfectedMaterial) config.lastActiveInfectedMaterial = "";
         
+        // get hat from playerprefs instead
         static Il2CppString* hatProperty = il2cpp_utils::createcsstr("hatCosmetic", il2cpp_utils::StringType::Manual);
         Il2CppString* defaultHat = il2cpp_utils::createcsstr(config.lastActiveHat);
         Il2CppString* savedHatCS = *il2cpp_utils::RunMethod<Il2CppString*>("UnityEngine", "PlayerPrefs", "GetString", hatProperty, defaultHat);
@@ -135,11 +136,11 @@ namespace GorillaCosmetics
         {
             savedHat.erase(0, 7);
         }
+
         selectedHat = SelectedHatFromConfig(savedHat);
         if (!selectedHat) config.lastActiveHat = "";
         
         // Load Mirror
-
         auto* mirrorLoader = new CosmeticsLoader::CosmeticLoader(folder + "Mirror", [&](std::string name, Il2CppObject* mirror){
             Il2CppObject* transform = CRASH_UNLESS(il2cpp_utils::RunMethod(mirror, "get_transform"));
             
@@ -155,8 +156,6 @@ namespace GorillaCosmetics
             CRASH_UNLESS(il2cpp_utils::RunMethod(mirror, "DontDestroyOnLoad", mirror));
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
         
-        //Il2CppObject* gameObject = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "GameObject", "CreatePrimitive", 0));
-
         // Load Hat Rack
         Il2CppObject* HatRack = nullptr;
         auto* rackLoader = new CosmeticsLoader::CosmeticLoader(folder + "HatRack", [&](std::string name, Il2CppObject* rack){
@@ -176,26 +175,33 @@ namespace GorillaCosmetics
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
 
         while(!HatRack) usleep(1000);
+        // how many hats
         int hatCount = GorillaHatObjects.size();
+        // how many racks are needed for that amount of hats
         int rackCount = (hatCount / 6) + 1;
+        // how many hats are on the last rack
         int lastRackCount = hatCount % 6;
 
         INFO("Hat count: %d, rack count: %d, last rack hat count: %d", hatCount, rackCount, lastRackCount);
+        // some names to use in finding transforms
         Il2CppString* rackName = il2cpp_utils::createcsstr("HatRack");
         Il2CppString* selectionName = il2cpp_utils::createcsstr("Selection");
         Il2CppObject* rackTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(HatRack, "get_transform"));
         
+        // the actual rack transform, so this contains the 6 hats
+        // mesh is now seperate, so only the colliders are being switched out
         Il2CppObject* actualRackTransform = *il2cpp_utils::RunMethod(rackTransform, "Find", rackName);
         Il2CppObject* selectionTransform = *il2cpp_utils::RunMethod(rackTransform, "Find", selectionName);
         Il2CppObject* actualRack = *il2cpp_utils::RunMethod(actualRackTransform, "get_gameObject");
         Il2CppObject* selectionGO = *il2cpp_utils::RunMethod(selectionTransform, "get_gameObject");
 
-        //rackSelector->Init();
         std::vector<Il2CppClass*> colliderKlass = {il2cpp_utils::GetClassFromName("UnityEngine", "Collider")};
         HatRackSelector* rackSelector = *il2cpp_utils::RunGenericMethod<HatRackSelector*>(HatRack, "AddComponent", std::vector<Il2CppClass*>{classof(HatRackSelector*)});
 
-        if (rackCount != 1)
+        // if more than 1 rack is going to be used
+        if (rackCount > 1)
         {
+            // setup the arrow buttons
             Array<Il2CppObject*>* buttonColliders = CRASH_UNLESS(il2cpp_utils::RunGenericMethod<Array<Il2CppObject*>*>(selectionGO, "GetComponentsInChildren", colliderKlass, true));
 
             for (int i = 0; i < buttonColliders->Length(); i++)
@@ -206,13 +212,16 @@ namespace GorillaCosmetics
                 HatRackSelectorButton* button = *il2cpp_utils::RunGenericMethod<HatRackSelectorButton*>(colliderGO, "AddComponent", std::vector<Il2CppClass*>{classof(HatRackSelectorButton*)});
                 button->selector = rackSelector;
                 il2cpp_utils::RunMethod(collider, "set_isTrigger", true);
+                // correct layer for buttons
                 il2cpp_utils::RunMethod(colliderGO, "set_layer", 18);
             }
         }
         else
         {  
+            // if not needed just delete it
             il2cpp_utils::RunMethod("UnityEngine", "Object", "Destroy", selectionGO);
         }
+
         // for the amount of racks needed
         for (int i = 0; i < rackCount; i++)
         {
@@ -223,13 +232,17 @@ namespace GorillaCosmetics
                 CRASH_UNLESS(il2cpp_utils::RunMethod(theRack, "DontDestroyOnLoad", theRack));
                 Il2CppObject* theRackTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(theRack, "get_transform"));
                 il2cpp_utils::RunMethod(theRackTransform, "SetParent", rackTransform, false);
+
+                // add to the rack selector list of racks
                 il2cpp_utils::RunMethod(rackSelector->racks, "Add", theRack);
                 Array<Il2CppObject*>* hatPosColliders = CRASH_UNLESS(il2cpp_utils::RunGenericMethod<Array<Il2CppObject*>*>(theRack, "GetComponentsInChildren", colliderKlass, true));
                 
+                // randomize order
                 std::vector<int> index = {};
                 for (int k = 0; k < 6; k++) index.push_back(k);
                 shuffle (index.begin(), index.end(), std::default_random_engine(time(0)));
 
+                // create previews for the current 6 hats
                 for (int j = 0; j < 6; j++)
                 {
                     Hat hat = get_hat(hatsLeft - index[j] - 1);
@@ -239,13 +252,16 @@ namespace GorillaCosmetics
             } 
             else // if the last one (may or may not be full)
             {
+                // add to rack list
                 il2cpp_utils::RunMethod(rackSelector->racks, "Add", actualRack);
                 Array<Il2CppObject*>* hatPosColliders = CRASH_UNLESS(il2cpp_utils::RunGenericMethod<Array<Il2CppObject*>*>(actualRack, "GetComponentsInChildren", colliderKlass, true));
                 
+                // randomize order
                 std::vector<int> index = {};
                 for (int k = 0; k < hatsLeft; k++) index.push_back(k);
                 shuffle (index.begin(), index.end(), std::default_random_engine(time(0)));
 
+                // create previews
                 for (int j = 0; j < hatsLeft; j++)
                 {   
                     Hat hat = get_hat(index[j]);
@@ -254,7 +270,8 @@ namespace GorillaCosmetics
                 }
             }
         }
-
+        
+        // make sure only 1 of the racks is active right now
         rackSelector->UpdateRack();
 
         // Load Material Previews

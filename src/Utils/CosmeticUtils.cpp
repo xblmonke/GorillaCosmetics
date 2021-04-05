@@ -70,9 +70,11 @@ namespace GorillaCosmetics::CosmeticUtils
     // il2cpp'd 
     void ChangeMaterial(Il2CppObject* rig, int materialIndex)
     {
-        if (!AssetLoader::IsLoaded()) AssetLoader::Load();
-        if (!rig) return;
-        if (materialIndex == 0)
+        // this method is pretty much exclusively used for the local player now, so only the local player should get updated by this
+        // for other players there is the variant that uses a material name to find which material to select
+        if (!AssetLoader::IsLoaded()) AssetLoader::Load(); // make sure it's loaded
+        if (!rig) return; // if rig is nullptr return
+        if (materialIndex == 0) // if not it or infected
         {
             // default mat
             Material material = AssetLoader::SelectedMaterial();
@@ -88,11 +90,11 @@ namespace GorillaCosmetics::CosmeticUtils
             else // default material time boi
             {
                 INFO("Material was nullptr, setting default");
-                // Resources.Load<Material>("objects/treeroom/materials/lightfur");
                 Il2CppObject* originalMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Resources", "Load", il2cpp_utils::createcsstr("objects/treeroom/materials/lightfur")));
                 instantiatedMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", originalMat));
             }
 
+            // custom colors changed, you need to get the color of materialsToChangeTo[0] now
             if (material.get_config().get_customColors())
             {
                 INFO("Material Had custom colors, setting them");
@@ -105,7 +107,7 @@ namespace GorillaCosmetics::CosmeticUtils
 
             il2cpp_utils::RunMethod(mainSkin, "set_material", instantiatedMat);
         }
-        else if (materialIndex > 0)
+        else if (materialIndex > 0) // if infected or it
         {
             Material material = AssetLoader::SelectedInfectedMaterial();
             Il2CppObject* theMatObj = material.get_material();
@@ -132,17 +134,23 @@ namespace GorillaCosmetics::CosmeticUtils
     // il2cpp'd 
     void ChangeMaterial(Il2CppObject* rig, int materialIndex, std::string materialName)
     {
+        // this method is used for all players, and uses materialName to select the material to use
         if (!AssetLoader::IsLoaded()) AssetLoader::Load();
         if (!rig) return;
+
+        // if this is actually hte local player, use the local player method instead
         if (IsLocalPlayer(rig))
         {
             ChangeMaterial(rig, materialIndex);
             return;
         }
 
+        // get the selected material index
         int selectedMaterial = AssetLoader::SelectedMaterialFromConfig(materialName);
+        // get that material
         Material material = AssetLoader::get_mat(selectedMaterial);
 
+        // if not it or infected
         if (materialIndex == 0)
         {
             // default mat
@@ -163,6 +171,7 @@ namespace GorillaCosmetics::CosmeticUtils
                 instantiatedMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", originalMat));
             }
 
+            // also here, custom colors need to be done differently now
             if (material.get_config().get_customColors())
             {
                 INFO("Material Had custom colors, setting them");
@@ -175,16 +184,20 @@ namespace GorillaCosmetics::CosmeticUtils
 
             il2cpp_utils::RunMethod(mainSkin, "set_material", instantiatedMat);
         }
+
+        // skipping custom infected materials because that seems sketch to make custom (just select default and then boom you're unaware of what they are)
     }
 
-    // il2cpp'd 
     void ChangeHat(Il2CppObject* rig)
     {
+        // local player change hat method
         if (!AssetLoader::IsLoaded()) AssetLoader::Load();
         if (!rig) return; 
+
         Il2CppObject* head = CRASH_UNLESS(il2cpp_utils::GetFieldValue(rig, "head"));
         Il2CppObject* rigTarget = CRASH_UNLESS(il2cpp_utils::GetFieldValue(head, "rigTarget"));
         static Il2CppString* hatName = il2cpp_utils::createcsstr("Hat", il2cpp_utils::StringType::Manual);
+        
         // destroy original
         Il2CppObject* existingHat = *il2cpp_utils::RunMethod(rigTarget, "Find", hatName);
         if (existingHat)
@@ -197,9 +210,11 @@ namespace GorillaCosmetics::CosmeticUtils
         {
             Hat hat = AssetLoader::SelectedHat();
             std::string name = hat.get_descriptor().get_name();
+
             if (name != "None" && name != "none")
             {
                 Il2CppObject* theHat = hat.get_hat();
+                // if no hat pointer found just return and act as if it was none
                 if (!theHat) return;
                 Il2CppObject* hatObject = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", theHat));
                 il2cpp_utils::RunMethod(hatObject, "SetActive", true);
@@ -224,18 +239,17 @@ namespace GorillaCosmetics::CosmeticUtils
 
     void ChangeHat(Il2CppObject* rig, std::string hatName)
     {
+        // used for anything besides the local player, just makes it a bit easier to differentiate the 2
         if (!AssetLoader::IsLoaded()) AssetLoader::Load();
         if (!rig) return;
+
+        // if local player, run the other method
         if (IsLocalPlayer(rig))
         {
             ChangeHat(rig);
             return;   
         }
-        Il2CppObject* photonView = *il2cpp_utils::RunMethod(rig, "get_photonView");
-        Il2CppObject* player = *il2cpp_utils::RunMethod(photonView, "get_Owner");
-        Il2CppString* nick = *il2cpp_utils::RunMethod<Il2CppString*>(player, "get_NickName");
-        std::string nickname = nick ? to_utf8(csstrtostr(nick)) : "";
-        getLogger().info("Hat Change Requested on %s", nickname.c_str());
+
         Il2CppObject* head = CRASH_UNLESS(il2cpp_utils::GetFieldValue(rig, "head"));
         Il2CppObject* rigTarget = CRASH_UNLESS(il2cpp_utils::GetFieldValue(head, "rigTarget"));
         static Il2CppString* hatTransformName = il2cpp_utils::createcsstr("Hat", il2cpp_utils::StringType::Manual);
@@ -254,7 +268,9 @@ namespace GorillaCosmetics::CosmeticUtils
         if (name != "None" && name != "none")
         {
             Il2CppObject* theHat = hat.get_hat();
+            // if hat not found or something just return and act as if it is a None hat
             if (!theHat) return;
+            
             Il2CppObject* hatObject = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", theHat));
             il2cpp_utils::RunMethod(hatObject, "SetActive", true);
             CRASH_UNLESS(il2cpp_utils::RunMethod(hatObject, "set_name", hatTransformName));
