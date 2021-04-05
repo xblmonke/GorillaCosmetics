@@ -44,7 +44,6 @@ void GorillaCosmetics::HatPreviewButton::OnTriggerEnter(Il2CppObject* collider)
 
 		config.lastActiveHat = name;
 		AssetLoader::SelectHat(config.lastActiveHat);
-        //CosmeticUtils::RefreshAllPlayers();
 
 		if (component)
 		{
@@ -56,6 +55,7 @@ void GorillaCosmetics::HatPreviewButton::OnTriggerEnter(Il2CppObject* collider)
             CRASH_UNLESS(il2cpp_utils::RunMethod(gorillaTagger, "StartVibration", isLeftHand, tapHapticStrength / 2.0f, tapHapticDuration));            
 		}
 
+        // runs the update method and such to make sure the values are synced
         UpdateHatValue();
 
         std::thread rePress([&](){
@@ -72,18 +72,26 @@ void GorillaCosmetics::HatPreviewButton::OnTriggerEnter(Il2CppObject* collider)
 
 void GorillaCosmetics::HatPreviewButton::UpdateHatValue()
 {
+    // get hat name
     std::string name = hat->get_descriptor().get_name();
+
+    // player prefs value to save to
     static Il2CppString* propertyName = il2cpp_utils::createcsstr("hatCosmetic", il2cpp_utils::StringType::Manual);
-    Il2CppString* hatCS;
+
+    // the actual name that will be saved
     std::string hatString = "custom:" + name;
-    hatCS = il2cpp_utils::createcsstr(hatString);
+    Il2CppString*hatCS = il2cpp_utils::createcsstr(hatString);
     
+    // save the custom hat to player prefs
     il2cpp_utils::RunMethod("UnityEngine", "PlayerPrefs", "SetString", propertyName, hatCS);
     il2cpp_utils::RunMethod("UnityEngine", "PlayerPrefs", "Save");
 
+    // get the gorilla tagger
     Il2CppObject* gorillaTagger = *il2cpp_utils::RunMethod("", "GorillaTagger", "get_Instance");
+    // get offline VR rig
     Il2CppObject* offlineVRRig = *il2cpp_utils::GetFieldValue(gorillaTagger, "offlineVRRig");
 
+    // get badge and face names
     Il2CppString* badge = *il2cpp_utils::GetFieldValue<Il2CppString*>(offlineVRRig, "badge");
     Il2CppString* face = *il2cpp_utils::GetFieldValue<Il2CppString*>(offlineVRRig, "face");
     
@@ -91,7 +99,10 @@ void GorillaCosmetics::HatPreviewButton::UpdateHatValue()
     d.SetObject();
     rapidjson::Document::AllocatorType& allocator = d.GetAllocator();
 
+    // add the members
     d.AddMember("hat", rapidjson::Value(hatString.c_str(), hatString.size(), allocator), allocator);
+
+    // material can just be taken from config
     std::string materialString = config.lastActiveMaterial;
     d.AddMember("material", rapidjson::Value(materialString.c_str(), materialString.size(), allocator), allocator);
 
@@ -101,10 +112,13 @@ void GorillaCosmetics::HatPreviewButton::UpdateHatValue()
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
     d.Accept(writer);
     
+    // make the string
     std::string messageString(buffer.GetString(), buffer.GetSize());
+    
+    // the value to send instead of the hat name
     Il2CppString* hatMessage = il2cpp_utils::createcsstr(messageString);
 
-    if (offlineVRRig)
+    if (offlineVRRig) // if offline rig, run the update method on it
     {
         il2cpp_utils::RunMethod(offlineVRRig, "LocalUpdateCosmetics", badge, face, hatMessage);
     }
@@ -113,9 +127,12 @@ void GorillaCosmetics::HatPreviewButton::UpdateHatValue()
         ERROR("offline VRRig was nullptr");
     }
 
+    // this is for online play
     Il2CppObject* myVRRig = *il2cpp_utils::GetFieldValue(gorillaTagger, "myVRRig");
     if (myVRRig)
     {
+        // this all is basically a copy of the GorillaHatButtonParent update method or whatever the method is
+        // the one that runs the UpdateCosmetics method and such
         Il2CppObject* photonView = *il2cpp_utils::RunMethod(myVRRig, "get_photonView");
         static Il2CppString* methodName = il2cpp_utils::createcsstr("UpdateCosmetics", il2cpp_utils::StringType::Manual);
         

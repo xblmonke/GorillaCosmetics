@@ -6,6 +6,7 @@ namespace GorillaCosmetics
 {
     void HatRackSelector::Awake()
     {
+        // just initializes the class, makes sure the index is 0 and that the list exists
         INFO("RackSelector Awake");
         selectedIndex = 0;
         static std::vector<const Il2CppClass*> gameObjectKlass = {il2cpp_utils::GetClassFromName("UnityEngine", "GameObject")};
@@ -17,19 +18,18 @@ namespace GorillaCosmetics
 
     void HatRackSelector::Next()
     {
+        // go to the next rack
         selectedIndex++;
         if (selectedIndex >= racks->size)
         {
-            INFO("reassign");
             selectedIndex = 0;
         }
-        INFO("Update");
         UpdateRack();
-        INFO("EOF");
     }
 
     void HatRackSelector::Previous()
     {
+        // go to previous rack
         selectedIndex--;
         if (selectedIndex < 0)
         {
@@ -41,6 +41,7 @@ namespace GorillaCosmetics
 
     void HatRackSelector::UpdateRack()
     {
+        // make sure the right rack from the list is active
         for (int i = 0; i < racks->size; i++)
         {
             il2cpp_utils::RunMethod(racks->items->values[i], "SetActive", selectedIndex == i);

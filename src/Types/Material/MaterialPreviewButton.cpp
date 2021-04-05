@@ -39,9 +39,9 @@ void GorillaCosmetics::MaterialPreviewButton::OnTriggerEnter(Il2CppObject* colli
 			INFO("Swapping to default material, name on default is %s", name.c_str());
 		}
 
+        // update config value
 		config.lastActiveMaterial = name;
 		AssetLoader::SelectMaterial(config.lastActiveMaterial);
-        //CosmeticUtils::RefreshAllPlayers();
 
 		if (component)
 		{
@@ -69,16 +69,13 @@ void GorillaCosmetics::MaterialPreviewButton::OnTriggerEnter(Il2CppObject* colli
 
 void GorillaCosmetics::MaterialPreviewButton::UpdateMaterialValue()
 {
-    std::string name = material->get_descriptor().get_name();
-    std::string material = "";
-    if (name != "None")
-        material = name;
-    else
-        material = "none";
+    // get material name
+    std::string material = material->get_descriptor().get_name();
 
     Il2CppObject* gorillaTagger = *il2cpp_utils::RunMethod("", "GorillaTagger", "get_Instance");
     Il2CppObject* offlineVRRig = *il2cpp_utils::GetFieldValue(gorillaTagger, "offlineVRRig");
 
+    // because we always keep the hat name in the rigs, we can just get the hat name from that
     Il2CppString* hatCS = *il2cpp_utils::GetFieldValue<Il2CppString*>(offlineVRRig, "hat");
     Il2CppString* face = *il2cpp_utils::GetFieldValue<Il2CppString*>(offlineVRRig, "face");
     Il2CppString* badge = *il2cpp_utils::GetFieldValue<Il2CppString*>(offlineVRRig, "badge");
@@ -89,6 +86,7 @@ void GorillaCosmetics::MaterialPreviewButton::UpdateMaterialValue()
     d.SetObject();
     rapidjson::Document::AllocatorType& allocator = d.GetAllocator();
 
+    // make the json
     d.AddMember("hat", rapidjson::Value(hat.c_str(), hat.size(), allocator), allocator);
     d.AddMember("material", rapidjson::Value(material.c_str(), material.size(), allocator), allocator);
     
@@ -99,10 +97,10 @@ void GorillaCosmetics::MaterialPreviewButton::UpdateMaterialValue()
     d.Accept(writer);
 
     std::string messageString(buffer.GetString(), buffer.GetSize());
-    
+    // the string to replace the hat update value with
     Il2CppString* hatMessage = il2cpp_utils::createcsstr(messageString);
     
-    if (offlineVRRig)
+    if (offlineVRRig) // if offline rig is defined, localupdate it
     {
         il2cpp_utils::RunMethod(offlineVRRig, "LocalUpdateCosmetics", badge, face, hatMessage);
     }
@@ -111,9 +109,11 @@ void GorillaCosmetics::MaterialPreviewButton::UpdateMaterialValue()
         ERROR("offline VRRig was nullptr");
     }
 
+    // this is for online play
     Il2CppObject* myVRRig = *il2cpp_utils::GetFieldValue(gorillaTagger, "myVRRig");
     if (myVRRig)
     {
+        // again, just a copy of that GorillaHatButtonParent method
         Il2CppObject* photonView = *il2cpp_utils::RunMethod(myVRRig, "get_photonView");
         static Il2CppString* methodName = il2cpp_utils::createcsstr("UpdateCosmetics", il2cpp_utils::StringType::Manual);
         
