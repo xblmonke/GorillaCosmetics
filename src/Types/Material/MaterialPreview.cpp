@@ -2,7 +2,7 @@
 #include "logging.hpp"
 
 
-GorillaCosmetics::MaterialPreview::MaterialPreview(Material mat, Vector3 pos, float scale)
+GorillaCosmetics::MaterialPreview::MaterialPreview(Material mat, Il2CppObject* parent, Vector3 localPos, float scale)
 {
     INFO("Creating preview for %s", mat.get_descriptor().get_name().c_str());
 
@@ -15,10 +15,10 @@ GorillaCosmetics::MaterialPreview::MaterialPreview(Material mat, Vector3 pos, fl
     Vector3 localScale = {scale, scale, scale};
     Quaternion rotation = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>("UnityEngine", "Quaternion", "get_identity"));
 
+    il2cpp_utils::RunMethod(transform, "SetParent", parent);
     CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_localScale", localScale));
-    CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_position", pos));
+    CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_localPosition", localPos));
     CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_rotation", rotation));
-
     CRASH_UNLESS(il2cpp_utils::RunMethod(gameObject, "DontDestroyOnLoad", gameObject));
 
     Il2CppObject* collider = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(gameObject, "GetComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("UnityEngine", "Collider")}));

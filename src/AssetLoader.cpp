@@ -140,20 +140,31 @@ namespace GorillaCosmetics
         selectedHat = SelectedHatFromConfig(savedHat);
         if (!selectedHat) config.lastActiveHat = "";
         
+        Il2CppObject* mirror = nullptr;
+        Vector3 mirrorPos = {0.0f, 0.0f, 0.0f};
         // Load Mirror
-        auto* mirrorLoader = new CosmeticsLoader::CosmeticLoader(folder + "Mirror", [&](std::string name, Il2CppObject* mirror){
-            Il2CppObject* transform = CRASH_UNLESS(il2cpp_utils::RunMethod(mirror, "get_transform"));
-            
-            Vector3 scale = {0.29f, 0.29f, 0.29f};
-            Vector3 pos = {-68.5f, 11.96f, -81.595f};
+        auto* mirrorLoader = new CosmeticsLoader::CosmeticLoader(folder + "Mirror", [&](std::string name, Il2CppObject* theMirror){
+            mirror = theMirror;
+            Il2CppObject* transform = CRASH_UNLESS(il2cpp_utils::RunMethod(theMirror, "get_transform"));
+            Il2CppString* mirrorString = il2cpp_utils::createcsstr("Level/treeroom/upper level/mirror");
+            Il2CppObject* gameMirror = *il2cpp_utils::RunMethod("UnityEngine", "GameObject", "Find", mirrorString);
+            Il2CppObject* gameMirrorTransform = *il2cpp_utils::RunMethod(gameMirror, "get_transform");
+
+            il2cpp_utils::RunMethod(gameMirror, "SetActive", false);
+            Vector3 scale = {0.25f, 0.25f, 0.25f};
+
+            // use the game mirror pos as a base
+            mirrorPos = CRASH_UNLESS(il2cpp_utils::RunMethod<Vector3>(gameMirrorTransform, "get_position"));
+            // move it cause it's too low
+            mirrorPos.y += 0.55f;
             Vector3 rot = {0.21f, -153.2f, -4.6f};
             Quaternion rotation = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>("UnityEngine", "Quaternion", "Euler", rot));
 
             CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_localScale", scale));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_position", pos));
+            CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_position", mirrorPos));
             CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_rotation", rotation));
             
-            CRASH_UNLESS(il2cpp_utils::RunMethod(mirror, "DontDestroyOnLoad", mirror));
+            CRASH_UNLESS(il2cpp_utils::RunMethod(theMirror, "DontDestroyOnLoad", theMirror));
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
         
         // Load Hat Rack
@@ -162,8 +173,12 @@ namespace GorillaCosmetics
             Il2CppObject* transform = CRASH_UNLESS(il2cpp_utils::RunMethod(rack, "get_transform"));
 
             Vector3 scale = {0.25f, 0.25f, 0.25f};
-            Vector3 pos = {-68.003f, 11.471f, -80.637f};
-            Vector3 rot = {0.0f, 0.0f, 0.0f};
+            // this pos is offset from the mirror
+            Vector3 pos = mirrorPos;
+            pos.y -= 0.42f;
+            pos.x -= 0.45f;
+            pos.z -= 0.7f;
+            Vector3 rot = {0.0f, -70.0f, 0.0f};
             Quaternion rotation = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>("UnityEngine", "Quaternion", "Euler", rot));
 
             CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_localScale", scale));
@@ -171,7 +186,6 @@ namespace GorillaCosmetics
             CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_rotation", rotation));
             CRASH_UNLESS(il2cpp_utils::RunMethod(rack, "DontDestroyOnLoad", rack));
             HatRack = rack;
-
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
 
         while(!HatRack) usleep(1000);
@@ -274,17 +288,88 @@ namespace GorillaCosmetics
         // make sure only 1 of the racks is active right now
         rackSelector->UpdateRack();
 
-        // Load Material Previews
-        int matCount = GorillaMaterialObjects.size();
-        int scaleCount = matCount > 6 ? matCount : 6; 
-        float scale = (0.8f/ scaleCount);
-        for (int i = 0; i < GorillaMaterialObjects.size(); i++)
+        int materialCount = GorillaMaterialObjects.size();
+        int materialPageCount = (materialCount / 10) + 1;
+        int lastMaterialCount = materialCount % 10;
+
+        // get relevant object pointers
+        Il2CppObject* mirrorTransform = *il2cpp_utils::RunMethod(mirror, "get_transform");
+        Il2CppString* materialSelectionName = il2cpp_utils::createcsstr("Selection");
+        Il2CppObject* materialSelectionTransform = *il2cpp_utils::RunMethod(mirrorTransform, "Find", materialSelectionName);
+        Il2CppObject* materialSelectionGO = *il2cpp_utils::RunMethod(materialSelectionTransform, "get_gameObject");
+
+        Il2CppString* previewName = il2cpp_utils::createcsstr("Preview");
+        Il2CppObject* previewTransform = *il2cpp_utils::RunMethod(mirrorTransform, "Find", previewName);
+        Il2CppObject* preview = *il2cpp_utils::RunMethod(previewTransform, "get_gameObject");
+
+        HatRackSelector* matSelector = *il2cpp_utils::RunGenericMethod<HatRackSelector*>(mirror, "AddComponent", std::vector<Il2CppClass*>{classof(HatRackSelector*)});
+
+        // if more than 1 add a selector
+        if (materialPageCount > 1)
         {
-            Material material = GorillaMaterialObjects[i];
-            Vector3 pos = {-68.287f, 12.04f - (scale * i), -81.251f};
-            MaterialPreview(material, pos, scale * 0.85f);
+            // setup the arrow buttons
+            Array<Il2CppObject*>* buttonColliders = CRASH_UNLESS(il2cpp_utils::RunGenericMethod<Array<Il2CppObject*>*>(materialSelectionGO, "GetComponentsInChildren", colliderKlass, true));
+
+            for (int i = 0; i < buttonColliders->Length(); i++)
+            {
+                INFO("Selector Button %d", i);
+                Il2CppObject* collider = buttonColliders->values[i];
+                Il2CppObject* colliderGO = *il2cpp_utils::RunMethod(collider, "get_gameObject");
+                HatRackSelectorButton* button = *il2cpp_utils::RunGenericMethod<HatRackSelectorButton*>(colliderGO, "AddComponent", std::vector<Il2CppClass*>{classof(HatRackSelectorButton*)});
+                button->selector = matSelector;
+                il2cpp_utils::RunMethod(collider, "set_isTrigger", true);
+                // correct layer for buttons
+                il2cpp_utils::RunMethod(colliderGO, "set_layer", 18);
+            }
+        }
+        else
+        {
+            il2cpp_utils::RunMethod("UnityEngine", "Object", "Destroy", materialSelectionGO);
         }
 
+        // for each material page
+        for (int i = 0; i < materialPageCount; i++)
+        {
+            int materialsLeft = materialCount - (i * 10);
+
+            if (materialsLeft > 10) // if not the last one
+            {
+                Il2CppObject* thePage = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", preview));
+                CRASH_UNLESS(il2cpp_utils::RunMethod(thePage, "DontDestroyOnLoad", thePage));
+                Il2CppObject* thePageTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(thePage, "get_transform"));
+                il2cpp_utils::RunMethod(thePageTransform, "SetParent", mirrorTransform, false);
+
+                // add to the rack selector list of racks
+                il2cpp_utils::RunMethod(matSelector->racks, "Add", thePage);
+
+                // create previews with a scale of 0.21
+                float scale = 0.21f;
+                for (int j = 0; j < 10; j++)
+                {
+                    int matIndex = materialsLeft - j - 1;
+                    Material material = GorillaMaterialObjects[matIndex];
+                    Vector3 pos = {0.0f, (-0.5f * scale) - (scale * j) - 0.05f, 0.0f};
+                    MaterialPreview(material, thePageTransform, pos, scale * 0.85f);
+                }
+            }
+            else // if the last one (may or may not be full)
+            {
+                // create previews with a scale of at most 2.1f / 6, or till 0.21f
+                float scale = 2.1f / (materialsLeft > 6 ? materialsLeft : 6);
+                il2cpp_utils::RunMethod(matSelector->racks, "Add", preview);
+
+                for (int j = 0; j < materialsLeft; j++)
+                {
+                    int matIndex = j;
+                    Material material = GorillaMaterialObjects[matIndex];
+
+                    Vector3 pos = {0.0f, (-0.5f * scale) - (scale * j) - 0.05f, 0.0f};
+                    MaterialPreview(material, previewTransform, pos, scale * 0.85f);
+                }
+            }
+        }
+        
+        matSelector->UpdateRack();
         Loaded = true;
         Loading = false;
     }

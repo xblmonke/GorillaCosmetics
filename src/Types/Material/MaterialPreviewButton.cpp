@@ -70,7 +70,7 @@ void GorillaCosmetics::MaterialPreviewButton::OnTriggerEnter(Il2CppObject* colli
 void GorillaCosmetics::MaterialPreviewButton::UpdateMaterialValue()
 {
     // get material name
-    std::string material = material->get_descriptor().get_name();
+    std::string material = this->material->get_descriptor().get_name();
 
     Il2CppObject* gorillaTagger = *il2cpp_utils::RunMethod("", "GorillaTagger", "get_Instance");
     Il2CppObject* offlineVRRig = *il2cpp_utils::GetFieldValue(gorillaTagger, "offlineVRRig");
