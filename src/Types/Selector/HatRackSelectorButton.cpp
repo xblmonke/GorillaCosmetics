@@ -2,7 +2,7 @@
 #include <string>
 #include "logging.hpp"
 
-DEFINE_CLASS(GorillaCosmetics::HatRackSelectorButton);
+DEFINE_TYPE(GorillaCosmetics::HatRackSelectorButton);
 
 bool GorillaCosmetics::HatRackSelectorButton::canPress = true;
 

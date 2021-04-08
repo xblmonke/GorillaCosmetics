@@ -9,7 +9,7 @@
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/prettywriter.h"
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/stringbuffer.h"
 
-DEFINE_CLASS(GorillaCosmetics::MaterialPreviewButton);
+DEFINE_TYPE(GorillaCosmetics::MaterialPreviewButton);
 
 bool GorillaCosmetics::MaterialPreviewButton::canPress = true;
 

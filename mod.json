@@ -11,11 +11,10 @@
         "libgorillacosmetics.so"
     ],
     "libraryFiles": [
-        "libbeatsaber-hook_1_2_4.so",
-        "libbeatsaber-hook_1_2_3.so",
+        "libbeatsaber-hook_1_2_6.so",
         "libcustom-types.so",
         "libzip.so",
-        "libquest-cosmetic-loader_0_1_1.so"
+        "libquest-cosmetic-loader_0_1_2.so"
     ],
     "fileCopies": [
         {

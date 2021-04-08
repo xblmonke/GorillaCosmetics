@@ -11,7 +11,7 @@
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/prettywriter.h"
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/stringbuffer.h"
 
-DEFINE_CLASS(GorillaCosmetics::HatPreviewButton);
+DEFINE_TYPE(GorillaCosmetics::HatPreviewButton);
 
 bool GorillaCosmetics::HatPreviewButton::canPress = true;
 
