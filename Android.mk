@@ -23,6 +23,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := beatsaber-hook_1_2_6
 LOCAL_EXPORT_C_INCLUDES := extern/beatsaber-hook
 LOCAL_SRC_FILES := extern/libbeatsaber-hook_1_2_6.so
+LOCAL_CPP_FEATURES += rtti exceptions
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: modloader - version: 1.1.0
 include $(CLEAR_VARS)
@@ -48,6 +49,12 @@ LOCAL_MODULE := zip
 LOCAL_EXPORT_C_INCLUDES := extern/zip
 LOCAL_SRC_FILES := extern/libzip.so
 include $(PREBUILT_SHARED_LIBRARY)
+# Creating prebuilt for dependency: monkecodegen - version: 0.2.2
+include $(CLEAR_VARS)
+LOCAL_MODULE := monkecodegen_0_2_2
+LOCAL_EXPORT_C_INCLUDES := extern/monkecodegen
+LOCAL_SRC_FILES := extern/libmonkecodegen_0_2_2.so
+include $(PREBUILT_SHARED_LIBRARY)
 
 # If you would like to use more shared libraries (such as custom UI, utils, or more) add them here, following the format above.
 # In addition, ensure that you add them to the shared library build below.
@@ -62,7 +69,8 @@ LOCAL_SHARED_LIBRARIES += beatsaber-hook_1_2_6
 LOCAL_SHARED_LIBRARIES += custom-types
 LOCAL_SHARED_LIBRARIES += quest-cosmetic-loader_0_1_2
 LOCAL_SHARED_LIBRARIES += zip
+LOCAL_SHARED_LIBRARIES += monkecodegen_0_2_2
 LOCAL_LDLIBS += -llog
-LOCAL_CFLAGS += -I'extern/libil2cpp/il2cpp/libil2cpp' -isystem 'extern' -I'extern/codegen/include' -DID='"GorillaCosmetics"' -DVERSION='"1.2.2"' -I'./shared' -I'./extern' -Wno-inaccessible-base -Wno-invalid-offsetof
+LOCAL_CFLAGS += -I'extern/libil2cpp/il2cpp/libil2cpp' -isystem 'extern' -I'extern/monkecodegen/include' -DID='"GorillaCosmetics"' -DVERSION='"1.2.2"' -I'./shared' -I'./extern' -Wno-inaccessible-base -Wno-invalid-offsetof
 LOCAL_C_INCLUDES += ./include ./src
 include $(BUILD_SHARED_LIBRARY)

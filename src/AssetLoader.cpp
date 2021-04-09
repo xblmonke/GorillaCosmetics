@@ -22,6 +22,11 @@
 #include "Utils/ZipUtils.hpp"
 #include "typedefs.h"
 
+#include "UnityEngine/Object.hpp"
+#include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/Transform.hpp"
+#include "System/Collections/Generic/List_1.hpp"
+
 extern ModInfo modInfo;
 
 static std::optional<std::string> dataDir;
@@ -34,6 +39,9 @@ std::string getDataDir(const ModInfo& info) {
     }
     return *dataDir + info.id.c_str() + "/";
 }
+
+using namespace UnityEngine;
+using namespace System::Collections::Generic;
 
 namespace GorillaCosmetics
 {
@@ -140,55 +148,66 @@ namespace GorillaCosmetics
         selectedHat = SelectedHatFromConfig(savedHat);
         if (!selectedHat) config.lastActiveHat = "";
         
-        Il2CppObject* mirror = nullptr;
+        GameObject* theParent = *il2cpp_utils::New<GameObject*>();
+        theParent->SetActive(true);
+        Object::DontDestroyOnLoad(theParent);
+        Transform* parentTransform = theParent->get_transform();
+
+        GameObject* mirror = nullptr;
         Vector3 mirrorPos = {0.0f, 0.0f, 0.0f};
         // Load Mirror
         auto* mirrorLoader = new CosmeticsLoader::CosmeticLoader(folder + "Mirror", [&](std::string name, Il2CppObject* theMirror){
-            mirror = theMirror;
-            Il2CppObject* transform = CRASH_UNLESS(il2cpp_utils::RunMethod(theMirror, "get_transform"));
-            Il2CppString* mirrorString = il2cpp_utils::createcsstr("Level/treeroom/upper level/mirror");
-            Il2CppObject* gameMirror = *il2cpp_utils::RunMethod("UnityEngine", "GameObject", "Find", mirrorString);
-            Il2CppObject* gameMirrorTransform = *il2cpp_utils::RunMethod(gameMirror, "get_transform");
-
-            il2cpp_utils::RunMethod(gameMirror, "SetActive", false);
-            Vector3 scale = {0.25f, 0.25f, 0.25f};
-
-            // use the game mirror pos as a base
-            mirrorPos = CRASH_UNLESS(il2cpp_utils::RunMethod<Vector3>(gameMirrorTransform, "get_position"));
-            // move it cause it's too low
-            mirrorPos.y += 0.55f;
-            Vector3 rot = {0.21f, -153.2f, -4.6f};
-            Quaternion rotation = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>("UnityEngine", "Quaternion", "Euler", rot));
-
-            CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_localScale", scale));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_position", mirrorPos));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_rotation", rotation));
-            
-            CRASH_UNLESS(il2cpp_utils::RunMethod(theMirror, "DontDestroyOnLoad", theMirror));
+            // instantiate the mirror because fuck knows why otherwise the mirror is just not showing up
+            mirror = Object::Instantiate((GameObject*)theMirror);
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
+
+        Transform* mirrorTransform = mirror->get_transform();
+        mirrorTransform->SetParent(parentTransform);
+
+        Il2CppString* mirrorString = il2cpp_utils::createcsstr("Level/treeroom/upper level/mirror");
+
+        Il2CppObject* gameMirror = UnityEngine::GameObject::Find(mirrorString);
+        Il2CppObject* gameMirrorTransform = *il2cpp_utils::RunMethod(gameMirror, "get_transform");
+        il2cpp_utils::RunMethod(gameMirror, "SetActive", false);
+        Vector3 mirrorScale = {0.25f, 0.25f, 0.25f};
+
+        // use the game mirror pos as a base
+        mirrorPos = CRASH_UNLESS(il2cpp_utils::RunMethod<Vector3>(gameMirrorTransform, "get_position"));
+        getLogger().info("Position for mirror: %.2f, %.2f, %.2f", mirrorPos.x, mirrorPos.y, mirrorPos.z);
+        // move it cause it's too low
+        mirrorPos.y += 0.55f;
+        Vector3 mirrorRot = {0.21f, -153.2f, -4.6f};
+
+        Quaternion mirrorRotation = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>("UnityEngine", "Quaternion", "Euler", mirrorRot));
+        CRASH_UNLESS(il2cpp_utils::RunMethod(mirrorTransform, "set_localScale", mirrorScale));
+        CRASH_UNLESS(il2cpp_utils::RunMethod(mirrorTransform, "set_position", mirrorPos));
+        CRASH_UNLESS(il2cpp_utils::RunMethod(mirrorTransform, "set_rotation", mirrorRotation));
         
+        Object::DontDestroyOnLoad(mirror);
+
         // Load Hat Rack
-        Il2CppObject* HatRack = nullptr;
+        GameObject* HatRack = nullptr;
         auto* rackLoader = new CosmeticsLoader::CosmeticLoader(folder + "HatRack", [&](std::string name, Il2CppObject* rack){
-            Il2CppObject* transform = CRASH_UNLESS(il2cpp_utils::RunMethod(rack, "get_transform"));
-
-            Vector3 scale = {0.25f, 0.25f, 0.25f};
-            // this pos is offset from the mirror
-            Vector3 pos = mirrorPos;
-            pos.y -= 0.42f;
-            pos.x -= 0.45f;
-            pos.z -= 0.7f;
-            Vector3 rot = {0.0f, -70.0f, 0.0f};
-            Quaternion rotation = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>("UnityEngine", "Quaternion", "Euler", rot));
-
-            CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_localScale", scale));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_position", pos));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(transform, "set_rotation", rotation));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(rack, "DontDestroyOnLoad", rack));
-            HatRack = rack;
+            // same here, instantiate it because otherwise it just fucking yeets all the way back to nowhere
+            HatRack = Object::Instantiate((GameObject*)rack);
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
 
-        while(!HatRack) usleep(1000);
+        Transform* rackTransform = HatRack->get_transform();
+        rackTransform->SetParent(parentTransform);
+        Vector3 rackScale = {0.25f, 0.25f, 0.25f};
+        // this pos is offset from the mirror
+        Vector3 rackPos = mirrorPos;
+        rackPos.y -= 0.42f;
+        rackPos.x -= 0.45f;
+        rackPos.z -= 0.7f;
+        Vector3 rackRot = {0.0f, -70.0f, 0.0f};
+        Quaternion RackRotation = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>("UnityEngine", "Quaternion", "Euler", rackRot));
+
+        CRASH_UNLESS(il2cpp_utils::RunMethod(rackTransform, "set_localScale", rackScale));
+        CRASH_UNLESS(il2cpp_utils::RunMethod(rackTransform, "set_position", rackPos));
+        CRASH_UNLESS(il2cpp_utils::RunMethod(rackTransform, "set_rotation", RackRotation));
+        Object::DontDestroyOnLoad(HatRack);
+
         // how many hats
         int hatCount = GorillaHatObjects.size();
         // how many racks are needed for that amount of hats
@@ -200,7 +219,6 @@ namespace GorillaCosmetics
         // some names to use in finding transforms
         Il2CppString* rackName = il2cpp_utils::createcsstr("HatRack");
         Il2CppString* selectionName = il2cpp_utils::createcsstr("Selection");
-        Il2CppObject* rackTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(HatRack, "get_transform"));
         
         // the actual rack transform, so this contains the 6 hats
         // mesh is now seperate, so only the colliders are being switched out
@@ -211,7 +229,7 @@ namespace GorillaCosmetics
 
         std::vector<Il2CppClass*> colliderKlass = {il2cpp_utils::GetClassFromName("UnityEngine", "Collider")};
         HatRackSelector* rackSelector = *il2cpp_utils::RunGenericMethod<HatRackSelector*>(HatRack, "AddComponent", std::vector<Il2CppClass*>{classof(HatRackSelector*)});
-
+        rackSelector->Init();
         // if more than 1 rack is going to be used
         if (rackCount > 1)
         {
@@ -242,13 +260,14 @@ namespace GorillaCosmetics
             int hatsLeft = hatCount - (i * 6);
             if (hatsLeft > 6) // if not the last rack
             {
-                Il2CppObject* theRack = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", actualRack));
-                CRASH_UNLESS(il2cpp_utils::RunMethod(theRack, "DontDestroyOnLoad", theRack));
+                Il2CppObject* theRack = Object::Instantiate((GameObject*)actualRack);
+                Object::DontDestroyOnLoad((Object*)theRack);
                 Il2CppObject* theRackTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(theRack, "get_transform"));
                 il2cpp_utils::RunMethod(theRackTransform, "SetParent", rackTransform, false);
 
                 // add to the rack selector list of racks
-                il2cpp_utils::RunMethod(rackSelector->racks, "Add", theRack);
+                getLogger().info("Selector: %p, list: %p, theRack: %p", rackSelector, rackSelector->racks, theRack);
+                rackSelector->racks->Add((GameObject*)theRack);
                 Array<Il2CppObject*>* hatPosColliders = CRASH_UNLESS(il2cpp_utils::RunGenericMethod<Array<Il2CppObject*>*>(theRack, "GetComponentsInChildren", colliderKlass, true));
                 
                 // randomize order
@@ -293,7 +312,6 @@ namespace GorillaCosmetics
         int lastMaterialCount = materialCount % 10;
 
         // get relevant object pointers
-        Il2CppObject* mirrorTransform = *il2cpp_utils::RunMethod(mirror, "get_transform");
         Il2CppString* materialSelectionName = il2cpp_utils::createcsstr("Selection");
         Il2CppObject* materialSelectionTransform = *il2cpp_utils::RunMethod(mirrorTransform, "Find", materialSelectionName);
         Il2CppObject* materialSelectionGO = *il2cpp_utils::RunMethod(materialSelectionTransform, "get_gameObject");
@@ -303,7 +321,7 @@ namespace GorillaCosmetics
         Il2CppObject* preview = *il2cpp_utils::RunMethod(previewTransform, "get_gameObject");
 
         HatRackSelector* matSelector = *il2cpp_utils::RunGenericMethod<HatRackSelector*>(mirror, "AddComponent", std::vector<Il2CppClass*>{classof(HatRackSelector*)});
-
+        matSelector->Init();
         // if more than 1 add a selector
         if (materialPageCount > 1)
         {
@@ -334,13 +352,13 @@ namespace GorillaCosmetics
 
             if (materialsLeft > 10) // if not the last one
             {
-                Il2CppObject* thePage = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", preview));
-                CRASH_UNLESS(il2cpp_utils::RunMethod(thePage, "DontDestroyOnLoad", thePage));
+                Il2CppObject* thePage = Object::Instantiate((GameObject*)preview);
+                Object::DontDestroyOnLoad((Object*)thePage);
                 Il2CppObject* thePageTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(thePage, "get_transform"));
                 il2cpp_utils::RunMethod(thePageTransform, "SetParent", mirrorTransform, false);
 
                 // add to the rack selector list of racks
-                il2cpp_utils::RunMethod(matSelector->racks, "Add", thePage);
+                matSelector->racks->Add((GameObject*)thePage);
 
                 // create previews with a scale of 0.21
                 float scale = 0.21f;
@@ -370,6 +388,14 @@ namespace GorillaCosmetics
         }
         
         matSelector->UpdateRack();
+
+        Vector3 finalMirrorPos = mirrorTransform->get_position();
+        Vector3 finalRackPos = rackTransform->get_position();
+        getLogger().info("Mirror current location: %.2f, %.2f, %.2f", finalMirrorPos.x, finalMirrorPos.y, finalMirrorPos.z);
+        getLogger().info("Rack   current location: %.2f, %.2f, %.2f", finalRackPos.x, finalRackPos.y, finalRackPos.z);
+
+        mirror->SetActive(true);
+        HatRack->SetActive(true);
         Loaded = true;
         Loading = false;
     }

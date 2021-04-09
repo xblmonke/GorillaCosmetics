@@ -5,9 +5,13 @@
 #include "quest-cosmetic-loader/shared/CosmeticLoader.hpp"
 #include "typedefs.h"
 
+#include "UnityEngine/Object.hpp"
+#include "UnityEngine/GameObject.hpp"
+
 #define run(value...) CRASH_UNLESS(il2cpp_utils::RunMethod(value))
 
 using namespace CosmeticsLoader;
+using namespace UnityEngine;
 
 GorillaCosmetics::HatPreview::HatPreview(Hat hat, Il2CppObject* collider)
 {
@@ -15,7 +19,7 @@ GorillaCosmetics::HatPreview::HatPreview(Hat hat, Il2CppObject* collider)
     Il2CppObject* theHat = hat.get_hat();
     if (theHat)
     {
-        gameObject = run("UnityEngine", "Object", "Instantiate", theHat);
+        gameObject = UnityEngine::Object::Instantiate((GameObject*)theHat);
     }
     else // fake hat time
     {
@@ -53,8 +57,6 @@ GorillaCosmetics::HatPreview::HatPreview(Hat hat, Il2CppObject* collider)
     run(collider, "set_isTrigger", true);
     run(colliderGO, "set_layer", 18);
 
-    INFO("adding button");
     HatPreviewButton* button = CRASH_UNLESS(il2cpp_utils::RunGenericMethod<HatPreviewButton*>(colliderGO, "AddComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("GorillaCosmetics", "HatPreviewButton")}));
-    INFO("Setting hat");
     button->hat = new Hat(hat.get_manifest().get_filePath());
 }

@@ -1,6 +1,9 @@
 #include "Types/Material/MaterialPreview.hpp"
 #include "logging.hpp"
 
+#include "UnityEngine/Quaternion.hpp"
+
+using namespace UnityEngine;
 
 GorillaCosmetics::MaterialPreview::MaterialPreview(Material mat, Il2CppObject* parent, Vector3 localPos, float scale)
 {

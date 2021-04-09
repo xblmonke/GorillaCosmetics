@@ -12,6 +12,15 @@
 #include "beatsaber-hook/shared/utils/typedefs.h"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 
+#include "UnityEngine/Material.hpp"
+#include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/Object.hpp"
+#include "UnityEngine/Color.hpp"
+#include "UnityEngine/Vector3.hpp"
+#include "UnityEngine/Quaternion.hpp"
+
+using namespace UnityEngine;
+
 namespace GorillaCosmetics::CosmeticUtils
 {
     // il2cpp'd
@@ -115,7 +124,7 @@ namespace GorillaCosmetics::CosmeticUtils
             {
                 Il2CppObject* renderer = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(theMatObj, "GetComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("UnityEngine", "Renderer")}));
                 Il2CppObject* originalMat = CRASH_UNLESS(il2cpp_utils::RunMethod(renderer, "get_material"));
-                Il2CppObject* instantiatedMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", originalMat));
+                Il2CppObject* instantiatedMat = UnityEngine::Object::Instantiate((UnityEngine::Material*)originalMat);
                 
                 Il2CppObject* mainSkin = CRASH_UNLESS(il2cpp_utils::GetFieldValue(rig, "mainSkin"));
 
@@ -161,14 +170,14 @@ namespace GorillaCosmetics::CosmeticUtils
             {
                 Il2CppObject* renderer = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(theMatObj, "GetComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("UnityEngine", "Renderer")}));
                 Il2CppObject* originalMat = CRASH_UNLESS(il2cpp_utils::RunMethod(renderer, "get_material"));
-                instantiatedMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", originalMat));
+                instantiatedMat = UnityEngine::Object::Instantiate((UnityEngine::Material*)originalMat);
             }
             else // default material time boi
             {
                 INFO("Material was nullptr, setting default");
                 // Resources.Load<Material>("objects/treeroom/materials/lightfur");
                 Il2CppObject* originalMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Resources", "Load", il2cpp_utils::createcsstr("objects/treeroom/materials/lightfur")));
-                instantiatedMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", originalMat));
+                instantiatedMat = UnityEngine::Object::Instantiate((UnityEngine::Material*)originalMat);
             }
 
             // also here, custom colors need to be done differently now
@@ -216,7 +225,7 @@ namespace GorillaCosmetics::CosmeticUtils
                 Il2CppObject* theHat = hat.get_hat();
                 // if no hat pointer found just return and act as if it was none
                 if (!theHat) return;
-                Il2CppObject* hatObject = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", theHat));
+                Il2CppObject* hatObject = UnityEngine::Object::Instantiate((GameObject*)theHat);
                 il2cpp_utils::RunMethod(hatObject, "SetActive", true);
                 CRASH_UNLESS(il2cpp_utils::RunMethod(hatObject, "set_name", hatName));
                 
@@ -271,7 +280,7 @@ namespace GorillaCosmetics::CosmeticUtils
             // if hat not found or something just return and act as if it is a None hat
             if (!theHat) return;
             
-            Il2CppObject* hatObject = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", theHat));
+            Il2CppObject* hatObject = UnityEngine::Object::Instantiate((GameObject*)theHat);
             il2cpp_utils::RunMethod(hatObject, "SetActive", true);
             CRASH_UNLESS(il2cpp_utils::RunMethod(hatObject, "set_name", hatTransformName));
             
