@@ -10,7 +10,7 @@ DECLARE_CLASS(GorillaCosmetics, MaterialPreviewButton, "", "GorillaTriggerBox", 
     public:
         Material* material;    
     
-    REGISTER_FUNCTION(MaterialPreviewButton,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(OnTriggerEnter);
         REGISTER_METHOD(UpdateMaterialValue);
         REGISTER_FIELD(canPress);

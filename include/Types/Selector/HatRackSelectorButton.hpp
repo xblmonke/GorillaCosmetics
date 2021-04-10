@@ -10,7 +10,7 @@ DECLARE_CLASS(GorillaCosmetics, HatRackSelectorButton, "UnityEngine", "MonoBehav
     DECLARE_INSTANCE_FIELD(bool, next);
     DECLARE_STATIC_FIELD(bool, canPress);
     
-    REGISTER_FUNCTION(HatRackSelectorButton,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(Awake);
         REGISTER_METHOD(OnTriggerEnter);
         REGISTER_FIELD(selector);

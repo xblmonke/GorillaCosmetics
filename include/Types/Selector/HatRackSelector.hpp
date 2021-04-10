@@ -14,7 +14,7 @@ DECLARE_CLASS(GorillaCosmetics, HatRackSelector, "UnityEngine", "MonoBehaviour",
     DECLARE_INSTANCE_FIELD(System::Collections::Generic::List_1<UnityEngine::GameObject*>*, racks);
     DECLARE_INSTANCE_FIELD(int, selectedIndex);
     
-    REGISTER_FUNCTION(HatRackSelector,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(Init);
         REGISTER_METHOD(Next);
         REGISTER_METHOD(Previous);

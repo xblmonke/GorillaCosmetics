@@ -157,8 +157,7 @@ namespace GorillaCosmetics
         Vector3 mirrorPos = {0.0f, 0.0f, 0.0f};
         // Load Mirror
         auto* mirrorLoader = new CosmeticsLoader::CosmeticLoader(folder + "Mirror", [&](std::string name, Il2CppObject* theMirror){
-            // instantiate the mirror because fuck knows why otherwise the mirror is just not showing up
-            mirror = Object::Instantiate((GameObject*)theMirror);
+            mirror = (GameObject*)theMirror;
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
 
         Transform* mirrorTransform = mirror->get_transform();
@@ -188,8 +187,7 @@ namespace GorillaCosmetics
         // Load Hat Rack
         GameObject* HatRack = nullptr;
         auto* rackLoader = new CosmeticsLoader::CosmeticLoader(folder + "HatRack", [&](std::string name, Il2CppObject* rack){
-            // same here, instantiate it because otherwise it just fucking yeets all the way back to nowhere
-            HatRack = Object::Instantiate((GameObject*)rack);
+            HatRack = (GameObject*)rack;
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
 
         Transform* rackTransform = HatRack->get_transform();

@@ -11,7 +11,7 @@ DECLARE_CLASS(GorillaCosmetics, HatPreviewButton, "", "GorillaTriggerBox", sizeo
     public:
         Hat* hat;    
         
-    REGISTER_FUNCTION(HatPreviewButtton,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(OnTriggerEnter);
         REGISTER_METHOD(UpdateHatValue);
         REGISTER_FIELD(canPress);
