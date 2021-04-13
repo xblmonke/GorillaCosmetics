@@ -6,7 +6,7 @@
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/MonoBehaviour.hpp"
 
-DECLARE_CLASS(GorillaCosmetics, HatRackSelector, "UnityEngine", "MonoBehaviour", sizeof(Il2CppObject) + sizeof(void*),
+DECLARE_CLASS_CODEGEN(GorillaCosmetics, HatRackSelector, UnityEngine::MonoBehaviour,
     DECLARE_CTOR(ctor);
     DECLARE_METHOD(void, Next);
     DECLARE_METHOD(void, Previous);
