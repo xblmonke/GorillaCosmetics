@@ -222,7 +222,7 @@ namespace GorillaCosmetics::CosmeticUtils
 
                 hatTransform->SetParent(rigTarget);
 
-                Vector3 pos = {0.0f, 0.365f, 0.4f};
+                Vector3 pos = {0.0f, 0.365f, 0.04f};
                 Vector3 rot = {0.0f, 90.0f, 10.0f};
 
                 hatTransform->set_localScale(Vector3::get_one() * 0.25f);
@@ -273,7 +273,7 @@ namespace GorillaCosmetics::CosmeticUtils
                 Transform* hatTransform = hatObject->get_transform();
 
                 hatTransform->SetParent(rigTarget);
-                Vector3 pos = {0.0f, 0.365f, 0.4f};
+                Vector3 pos = {0.0f, 0.365f, 0.04f};
                 Vector3 rot = {0.0f, 90.0f, 10.0f};
 
                 hatTransform->set_localScale(Vector3::get_one() * 0.25f);
