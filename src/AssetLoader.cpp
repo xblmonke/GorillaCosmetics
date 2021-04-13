@@ -208,10 +208,10 @@ namespace GorillaCosmetics
 
         // how many hats
         int hatCount = GorillaHatObjects.size();
-        // how many racks are needed for that amount of hats
-        int rackCount = (hatCount / 6) + 1;
         // how many hats are on the last rack
         int lastRackCount = hatCount % 6;
+        // how many racks are needed for that amount of hats
+        int rackCount = (hatCount / 6) + (lastRackCount == 0 ? 0 : 1);
 
         INFO("Hat count: %d, rack count: %d, last rack hat count: %d", hatCount, rackCount, lastRackCount);
         // some names to use in finding transforms
@@ -307,8 +307,8 @@ namespace GorillaCosmetics
         rackSelector->UpdateRack();
 
         int materialCount = GorillaMaterialObjects.size();
-        int materialPageCount = (materialCount / 10) + 1;
         int lastMaterialCount = materialCount % 10;
+        int materialPageCount = (materialCount / 10) + (lastMaterialCount == 0 ? 0 : 1);
 
         // get relevant object pointers
         Il2CppString* materialSelectionName = il2cpp_utils::createcsstr("Selection");
