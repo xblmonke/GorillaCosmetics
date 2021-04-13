@@ -4,6 +4,8 @@
 #include "quest-cosmetic-loader/shared/Descriptor.hpp"
 #include "quest-cosmetic-loader/shared/Manifest.hpp"
 
+#include "UnityEngine/GameObject.hpp"
+
 namespace GorillaCosmetics
 {
     class Hat
@@ -20,10 +22,10 @@ namespace GorillaCosmetics
             const Config& get_config() const;
             const Descriptor& get_descriptor() const;
             const HatManifest& get_manifest() const;
-            Il2CppObject* get_hat();
+            UnityEngine::GameObject* get_hat();
 
         protected:
-            Il2CppObject* object = nullptr;
+            UnityEngine::GameObject* object = nullptr;
             HatManifest manifest;
     };
 }

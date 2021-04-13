@@ -3,6 +3,7 @@
 #include "logging.hpp"
 
 using namespace CosmeticsLoader;
+using namespace UnityEngine;
 
 namespace GorillaCosmetics
 {
@@ -12,8 +13,8 @@ namespace GorillaCosmetics
     {
         CosmeticLoader<HatManifest>* loader = new CosmeticLoader<HatManifest>(manifest, [&, loader](std::string name , Il2CppObject* obj){
             INFO("Loaded Hat %s", this->manifest.get_descriptor().get_name().c_str());            
-            this->object = obj;
-            il2cpp_utils::RunMethod(obj, "SetActive", false);
+            this->object = (GameObject*)obj;
+            object->SetActive(false);
             //delete(loader);
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
     }
@@ -33,7 +34,7 @@ namespace GorillaCosmetics
         return manifest;
     }
 
-    Il2CppObject* Hat::get_hat()
+    UnityEngine::GameObject* Hat::get_hat()
     {
         return object;
     }

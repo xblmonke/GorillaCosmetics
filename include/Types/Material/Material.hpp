@@ -4,6 +4,8 @@
 #include "quest-cosmetic-loader/shared/Descriptor.hpp"
 #include "quest-cosmetic-loader/shared/Manifest.hpp"
 
+#include "UnityEngine/GameObject.hpp"
+
 namespace GorillaCosmetics
 {
     class Material
@@ -19,10 +21,10 @@ namespace GorillaCosmetics
             const Config& get_config() const;
             const Descriptor& get_descriptor() const;
             const MaterialManifest& get_manifest() const;
-            Il2CppObject* get_material();
+            UnityEngine::GameObject* get_material();
 
         protected:
-            Il2CppObject* object = nullptr;
+            UnityEngine::GameObject* object = nullptr;
             MaterialManifest manifest;
     };
 }

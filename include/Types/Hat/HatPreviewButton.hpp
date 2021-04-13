@@ -3,8 +3,11 @@
 #include "custom-types/shared/macros.hpp"
 #include "Types/Hat/Hat.hpp"
 
-DECLARE_CLASS(GorillaCosmetics, HatPreviewButton, "", "GorillaTriggerBox", sizeof(Il2CppObject) + sizeof(void*) * 2,
-    DECLARE_METHOD(void, OnTriggerEnter, Il2CppObject* collider);
+#include "UnityEngine/Collider.hpp"
+#include "GlobalNamespace/GorillaTriggerBox.hpp"
+
+DECLARE_CLASS_CODEGEN(GorillaCosmetics, HatPreviewButton, GlobalNamespace::GorillaTriggerBox,
+    DECLARE_METHOD(void, OnTriggerEnter, UnityEngine::Collider* collider);
     DECLARE_METHOD(void, UpdateHatValue);
     DECLARE_STATIC_FIELD(bool, canPress);
 

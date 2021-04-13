@@ -24,31 +24,32 @@
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/prettywriter.h"
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/stringbuffer.h"
 
+#include "GlobalNamespace/VRRig.hpp"
 
-typedef struct PhotonMessageInfo {
-    int timeInt;
-    Il2CppObject* sender;
-    Il2CppObject* photonView;
-} PhotonMessageInfo;
 
-DEFINE_IL2CPP_ARG_TYPE(PhotonMessageInfo, "Photon.Pun", "PhotonMessageInfo");
-
+#include "Photon/Realtime/Player.hpp"
+#include "Photon/Pun/PhotonView.hpp"
+#include "Photon/Pun/PhotonNetwork.hpp"
+#include "Photon/Pun/PhotonMessageInfo.hpp"
 
 ModInfo modInfo;
 
 using namespace CosmeticsLoader;
 using namespace GorillaCosmetics;
 
-MAKE_HOOK_OFFSETLESS(VRRig_ChangeMaterial, void, Il2CppObject* self, int materialIndex)
+using namespace Photon::Pun;
+using namespace Photon::Realtime;
+
+MAKE_HOOK_OFFSETLESS(VRRig_ChangeMaterial, void, GlobalNamespace::VRRig* self, int materialIndex)
 {
     VRRig_ChangeMaterial(self, materialIndex);
     // postfix
 
     // get user ID
-    Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
-    Il2CppObject* owner = *il2cpp_utils::RunMethod(photonView, "get_Owner");
+    PhotonView* photonView = self->get_photonView();
+    Player* owner = photonView ? photonView->get_Owner() : nullptr;
 
-    Il2CppString* UserIDCS = *il2cpp_utils::RunMethod<Il2CppString*>(owner, "get_UserId");
+    Il2CppString* UserIDCS = owner ? owner->get_UserId() : nullptr;
     std::string UserID = UserIDCS ? to_utf8(csstrtostr(UserIDCS)) : "";
 
     // get material from cache
@@ -56,7 +57,7 @@ MAKE_HOOK_OFFSETLESS(VRRig_ChangeMaterial, void, Il2CppObject* self, int materia
     CosmeticUtils::ChangeMaterial(self, materialIndex, material);
 }
 
-MAKE_HOOK_OFFSETLESS(VRRig_Start, void, Il2CppObject* self)
+MAKE_HOOK_OFFSETLESS(VRRig_Start, void, GlobalNamespace::VRRig* self)
 {
     VRRig_Start(self);
     // postfix
@@ -65,10 +66,10 @@ MAKE_HOOK_OFFSETLESS(VRRig_Start, void, Il2CppObject* self)
     GorillaCosmetics::AssetLoader::Load();
 
     // get user ID
-    Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
-    Il2CppObject* owner = *il2cpp_utils::RunMethod(photonView, "get_Owner");
+    PhotonView* photonView = self->get_photonView();
+    Player* owner = photonView ? photonView->get_Owner() : nullptr;
 
-    Il2CppString* UserIDCS = *il2cpp_utils::RunMethod<Il2CppString*>(owner, "get_UserId");
+    Il2CppString* UserIDCS = owner ? owner->get_UserId() : nullptr;
     std::string UserID = UserIDCS ? to_utf8(csstrtostr(UserIDCS)) : "";
 
     // get hat for user from the cached list
@@ -89,7 +90,7 @@ MAKE_HOOK_OFFSETLESS(VRRig_Start, void, Il2CppObject* self)
     CosmeticUtils::ChangeMaterial(self, setMatIndex, material);
 }
 
-MAKE_HOOK_OFFSETLESS(VRRig_UpdateCosmetics, void, Il2CppObject* self, Il2CppString* newBadge, Il2CppString* newFace, Il2CppString* newHat, PhotonMessageInfo info)
+MAKE_HOOK_OFFSETLESS(VRRig_UpdateCosmetics, void, GlobalNamespace::VRRig* self, Il2CppString* newBadge, Il2CppString* newFace, Il2CppString* newHat, PhotonMessageInfo info)
 {
     std::string hatString = to_utf8(csstrtostr(newHat));
     std::string hat = "";
@@ -108,10 +109,10 @@ MAKE_HOOK_OFFSETLESS(VRRig_UpdateCosmetics, void, Il2CppObject* self, Il2CppStri
         material = d["material"].GetString();
 
         // get user ID to save the value on the cosmetics list
-        Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
-        Il2CppObject* owner = *il2cpp_utils::RunMethod(photonView, "get_Owner");
+        PhotonView* photonView = self->get_photonView();
+        Player* owner = photonView ? photonView->get_Owner() : nullptr;
 
-        Il2CppString* UserIDCS = *il2cpp_utils::RunMethod<Il2CppString*>(owner, "get_UserId");
+        Il2CppString* UserIDCS = owner ? owner->get_UserId() : nullptr;
         std::string UserID = UserIDCS ? to_utf8(csstrtostr(UserIDCS)) : "";
 
         // save values to player ID
@@ -124,16 +125,16 @@ MAKE_HOOK_OFFSETLESS(VRRig_UpdateCosmetics, void, Il2CppObject* self, Il2CppStri
     VRRig_UpdateCosmetics(self, newBadge, newFace, il2cpp_utils::createcsstr(hat), info);
 
     // postfix
-    Il2CppObject* player = *il2cpp_utils::RunMethod(info.photonView, "get_Owner");
+    Player* player = info.photonView->get_Owner();
 
-    Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
-    Il2CppObject* owner = *il2cpp_utils::RunMethod(photonView, "get_Owner");
+    PhotonView* photonView = self->get_photonView();
+    Player* owner = photonView ? photonView->get_Owner() : nullptr;
 
     // if the owner of this vr rig is also the one that sent the update
-    if (player == owner)
+    if (player && player->Equals(owner))
     {
         // log the name for reasons unbeknownst to the universe
-        Il2CppString* nick = *il2cpp_utils::RunMethod<Il2CppString*>(player, "get_NickName");
+        Il2CppString* nick = player->get_NickName();
         std::string nickname = to_utf8(csstrtostr(nick));
         getLogger().info("Update Requested for %s", nickname.c_str());
 
@@ -149,15 +150,14 @@ MAKE_HOOK_OFFSETLESS(VRRig_UpdateCosmetics, void, Il2CppObject* self, Il2CppStri
         // if custom update change the material
         if (isCustomUpdate)
         {
-            int setMatIndex = CRASH_UNLESS(il2cpp_utils::GetFieldValue<int>(self, "setMatIndex"));
-            CosmeticUtils::ChangeMaterial(self, setMatIndex, material);
+            CosmeticUtils::ChangeMaterial(self, self->setMatIndex, material);
         }
     }
     // log because why not
     else getLogger().error("Player and Owner were not equal");
 }
 
-MAKE_HOOK_OFFSETLESS(VRRig_LocalUpdateCosmetics, void, Il2CppObject* self, Il2CppString* newBadge, Il2CppString* newFace, Il2CppString* newHat)
+MAKE_HOOK_OFFSETLESS(VRRig_LocalUpdateCosmetics, void, GlobalNamespace::VRRig* self, Il2CppString* newBadge, Il2CppString* newFace, Il2CppString* newHat)
 {
     std::string hatString = to_utf8(csstrtostr(newHat));
     std::string hat = "";
@@ -176,10 +176,10 @@ MAKE_HOOK_OFFSETLESS(VRRig_LocalUpdateCosmetics, void, Il2CppObject* self, Il2Cp
         material = d["material"].GetString();
 
         // get user ID to save the value on the cosmetics list
-        Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
-        Il2CppObject* owner = *il2cpp_utils::RunMethod(photonView, "get_Owner");
+        PhotonView* photonView = self->get_photonView();
+        Player* owner = photonView ? photonView->get_Owner() : nullptr;
 
-        Il2CppString* UserIDCS = *il2cpp_utils::RunMethod<Il2CppString*>(owner, "get_UserId");
+        Il2CppString* UserIDCS = owner ? owner->get_UserId() : nullptr;
         std::string UserID = UserIDCS ? to_utf8(csstrtostr(UserIDCS)) : "";
         // save values to player ID
         PlayerCosmeticsList::set_player(UserID, hat, material);
@@ -204,18 +204,16 @@ MAKE_HOOK_OFFSETLESS(VRRig_LocalUpdateCosmetics, void, Il2CppObject* self, Il2Cp
     // if the update was custom, update the material of this VRRig
     if (isCustomUpdate)
     {
-        // get the material index
-        int setMatIndex = CRASH_UNLESS(il2cpp_utils::GetFieldValue<int>(self, "setMatIndex"));
         // change material
-        CosmeticUtils::ChangeMaterial(self, setMatIndex, material);
+        CosmeticUtils::ChangeMaterial(self, self->setMatIndex, material);
     }
 }
 
-MAKE_HOOK_OFFSETLESS(VRRig_RequestCosmetics, void, Il2CppObject* self, PhotonMessageInfo info)
+MAKE_HOOK_OFFSETLESS(VRRig_RequestCosmetics, void, GlobalNamespace::VRRig* self, PhotonMessageInfo info)
 {
     // we need to change behaviour on this method too, because otherwise the initial values will not be correct
-    Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
-    bool IsMine = *il2cpp_utils::RunMethod<bool>(photonView, "get_IsMine");
+    PhotonView* photonView = self->get_photonView();
+    bool IsMine = photonView ? photonView->get_IsMine() : false;
 
     // basically a copy of the normal method but with custom text
     // if this is my VR rig do the thing
@@ -225,9 +223,9 @@ MAKE_HOOK_OFFSETLESS(VRRig_RequestCosmetics, void, Il2CppObject* self, PhotonMes
         std::string material = config.lastActiveMaterial;
 
         // get the configured values
-        Il2CppString* hatCS = *il2cpp_utils::GetFieldValue<Il2CppString*>(self, "hat");
-        Il2CppString* face = *il2cpp_utils::GetFieldValue<Il2CppString*>(self, "face");
-        Il2CppString* badge = *il2cpp_utils::GetFieldValue<Il2CppString*>(self, "badge");
+        Il2CppString* hatCS = self->hat;
+        Il2CppString* face = self->face;
+        Il2CppString* badge = self->badge;
 
         // I need the hat name to put in the json object (could possibly not be a custom hat, so needed)
         std::string hat = to_utf8(csstrtostr(hatCS));
@@ -267,32 +265,31 @@ MAKE_HOOK_OFFSETLESS(VRRig_RequestCosmetics, void, Il2CppObject* self, PhotonMes
         argsArray->values[1] = (Il2CppObject*)face;
         argsArray->values[2] = (Il2CppObject*)hatMessage;
         
-        il2cpp_utils::RunMethod(photonView, "RPC", methodName, info.sender, argsArray);
+        photonView->RPC(methodName, info.Sender, argsArray);
 
-        il2cpp_utils::RunMethod("Photon.Pun", "PhotonNetwork", "SendAllOutgoingCommands");
+        PhotonNetwork::SendAllOutgoingCommands();
     }
 
     // run the original method, so that people without the mod also get the correct values sent over
     VRRig_RequestCosmetics(self, info);
 }
 
-MAKE_HOOK_OFFSETLESS(VRRig_InitializeNoobMaterial, void, Il2CppObject* self, float red, float green, float blue)
+MAKE_HOOK_OFFSETLESS(VRRig_InitializeNoobMaterial, void, GlobalNamespace::VRRig* self, float red, float green, float blue)
 {
     // when the noob material is intialized the mat needs to be updated to have the correct color
     VRRig_InitializeNoobMaterial(self, red, green, blue);
     // postfix
 
     // get user ID
-    Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
-    Il2CppObject* owner = *il2cpp_utils::RunMethod(photonView, "get_Owner");
+    PhotonView* photonView = self->get_photonView();
+    Player* owner = photonView ? photonView->get_Owner() : nullptr;
 
-    Il2CppString* UserIDCS = *il2cpp_utils::RunMethod<Il2CppString*>(owner, "get_UserId");
+    Il2CppString* UserIDCS = owner ? owner->get_UserId() : nullptr;
     std::string UserID = UserIDCS ? to_utf8(csstrtostr(UserIDCS)) : "";
 
     // change the material
     std::string material = PlayerCosmeticsList::get_material(UserID);
-    int setMatIndex = CRASH_UNLESS(il2cpp_utils::GetFieldValue<int>(self, "setMatIndex"));
-    CosmeticUtils::ChangeMaterial(self, setMatIndex, material);
+    CosmeticUtils::ChangeMaterial(self, self->setMatIndex, material);
 }
 
 extern "C" void setup(ModInfo& info)

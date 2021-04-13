@@ -11,18 +11,35 @@
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/prettywriter.h"
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/stringbuffer.h"
 
+#include "UnityEngine/Collider.hpp"
+#include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/Transform.hpp"
+#include "UnityEngine/PlayerPrefs.hpp"
+
+#include "GlobalNamespace/GorillaTriggerColliderHandIndicator.hpp"
+#include "GlobalNamespace/GorillaTagger.hpp"
+#include "GlobalNamespace/VRRig.hpp"
+
+#include "Photon/Pun/PhotonView.hpp"
+#include "Photon/Pun/PhotonNetwork.hpp"
+
 DEFINE_TYPE(GorillaCosmetics::HatPreviewButton);
 
 bool GorillaCosmetics::HatPreviewButton::canPress = true;
 
-void GorillaCosmetics::HatPreviewButton::OnTriggerEnter(Il2CppObject* collider)
+using namespace UnityEngine;
+using namespace GlobalNamespace;
+using namespace Photon::Pun;
+
+void GorillaCosmetics::HatPreviewButton::OnTriggerEnter(Collider* collider)
 {
     if (!canPress) return;
-    Il2CppObject* handIndicator = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(collider, "GetComponentInParent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("", "GorillaTriggerColliderHandIndicator")}));
+    GorillaTriggerColliderHandIndicator* handIndicator = collider->GetComponentInParent<GorillaTriggerColliderHandIndicator*>();
     if (handIndicator)
 	{
         canPress = false;
-		Il2CppObject* component = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(collider, "GetComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("", "GorillaTriggerColliderHandIndicator")}));
+		GorillaTriggerColliderHandIndicator* component = collider->GetComponent<GorillaTriggerColliderHandIndicator*>();
+
 		if (!hat)
         {
             ERROR("Hat Was Nullptr, returning");
@@ -30,7 +47,7 @@ void GorillaCosmetics::HatPreviewButton::OnTriggerEnter(Il2CppObject* collider)
         }
         
         // do stuff
-		Il2CppObject* theHat = hat->get_hat();
+		GameObject* theHat = hat->get_hat();
         std::string name = hat->get_descriptor().get_name();
         
         if(name != "None")
@@ -47,12 +64,13 @@ void GorillaCosmetics::HatPreviewButton::OnTriggerEnter(Il2CppObject* collider)
 
 		if (component)
 		{
-            Il2CppObject* gorillaTagger = CRASH_UNLESS(il2cpp_utils::RunMethod("", "GorillaTagger", "get_Instance"));
-            bool isLeftHand = CRASH_UNLESS(il2cpp_utils::GetFieldValue<bool>(component, "isLeftHand"));
-            float tapHapticStrength = CRASH_UNLESS(il2cpp_utils::GetFieldValue<float>(gorillaTagger, "tapHapticStrength"));
-            float tapHapticDuration = CRASH_UNLESS(il2cpp_utils::GetFieldValue<float>(gorillaTagger, "tapHapticDuration"));
+            GorillaTagger* gorillaTagger = GorillaTagger::get_Instance();
 
-            CRASH_UNLESS(il2cpp_utils::RunMethod(gorillaTagger, "StartVibration", isLeftHand, tapHapticStrength / 2.0f, tapHapticDuration));            
+            bool isLeftHand = component->isLeftHand;
+            float tapHapticStrength = gorillaTagger->tapHapticStrength;
+            float tapHapticDuration = gorillaTagger->tapHapticDuration;
+
+            gorillaTagger->StartVibration(component->isLeftHand,  tapHapticStrength / 2.0f, tapHapticDuration);
 		}
 
         // runs the update method and such to make sure the values are synced
@@ -80,20 +98,20 @@ void GorillaCosmetics::HatPreviewButton::UpdateHatValue()
 
     // the actual name that will be saved
     std::string hatString = "custom:" + name;
-    Il2CppString*hatCS = il2cpp_utils::createcsstr(hatString);
+    Il2CppString* hatCS = il2cpp_utils::createcsstr(hatString);
     
     // save the custom hat to player prefs
-    il2cpp_utils::RunMethod("UnityEngine", "PlayerPrefs", "SetString", propertyName, hatCS);
-    il2cpp_utils::RunMethod("UnityEngine", "PlayerPrefs", "Save");
+    PlayerPrefs::SetString(propertyName, hatCS);
+    PlayerPrefs::Save();
 
     // get the gorilla tagger
-    Il2CppObject* gorillaTagger = *il2cpp_utils::RunMethod("", "GorillaTagger", "get_Instance");
+    GorillaTagger* gorillaTagger = GorillaTagger::get_Instance();
     // get offline VR rig
-    Il2CppObject* offlineVRRig = *il2cpp_utils::GetFieldValue(gorillaTagger, "offlineVRRig");
+    VRRig* offlineVRRig = gorillaTagger->offlineVRRig;
 
     // get badge and face names
-    Il2CppString* badge = *il2cpp_utils::GetFieldValue<Il2CppString*>(offlineVRRig, "badge");
-    Il2CppString* face = *il2cpp_utils::GetFieldValue<Il2CppString*>(offlineVRRig, "face");
+    Il2CppString* badge = offlineVRRig->badge;
+    Il2CppString* face = offlineVRRig->face;
     
     rapidjson::Document d;
     d.SetObject();
@@ -120,7 +138,7 @@ void GorillaCosmetics::HatPreviewButton::UpdateHatValue()
 
     if (offlineVRRig) // if offline rig, run the update method on it
     {
-        il2cpp_utils::RunMethod(offlineVRRig, "LocalUpdateCosmetics", badge, face, hatMessage);
+        offlineVRRig->LocalUpdateCosmetics(badge, face, hatMessage);
     }
     else
     {
@@ -128,12 +146,12 @@ void GorillaCosmetics::HatPreviewButton::UpdateHatValue()
     }
 
     // this is for online play
-    Il2CppObject* myVRRig = *il2cpp_utils::GetFieldValue(gorillaTagger, "myVRRig");
+    VRRig* myVRRig = gorillaTagger->myVRRig;
     if (myVRRig)
     {
         // this all is basically a copy of the GorillaHatButtonParent update method or whatever the method is
         // the one that runs the UpdateCosmetics method and such
-        Il2CppObject* photonView = *il2cpp_utils::RunMethod(myVRRig, "get_photonView");
+        PhotonView* photonView = myVRRig->get_photonView();
         static Il2CppString* methodName = il2cpp_utils::createcsstr("UpdateCosmetics", il2cpp_utils::StringType::Manual);
         
         Array<Il2CppObject*>* argsArray = reinterpret_cast<Array<Il2CppObject*>*>(il2cpp_functions::array_new(classof(Il2CppObject*), 3));
@@ -141,9 +159,8 @@ void GorillaCosmetics::HatPreviewButton::UpdateHatValue()
         argsArray->values[1] = (Il2CppObject*)face;
         argsArray->values[2] = (Il2CppObject*)hatMessage;
         
-        il2cpp_utils::RunMethod(photonView, "RPC", methodName, 0, argsArray);
-
-        il2cpp_utils::RunMethod("Photon.Pun", "PhotonNetwork", "SendAllOutgoingCommands");
+        photonView->RPC(methodName, RpcTarget::All, argsArray);
+        PhotonNetwork::SendAllOutgoingCommands();
     }
     else
     {

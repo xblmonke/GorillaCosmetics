@@ -9,18 +9,34 @@
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/prettywriter.h"
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/stringbuffer.h"
 
+#include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/Material.hpp"
+#include "UnityEngine/Transform.hpp"
+#include "UnityEngine/PlayerPrefs.hpp"
+
+#include "GlobalNamespace/GorillaTriggerColliderHandIndicator.hpp"
+#include "GlobalNamespace/GorillaTagger.hpp"
+#include "GlobalNamespace/VRRig.hpp"
+
+#include "Photon/Pun/PhotonView.hpp"
+#include "Photon/Pun/PhotonNetwork.hpp"
+
+using namespace UnityEngine;
+using namespace GlobalNamespace;
+using namespace Photon::Pun;
+
 DEFINE_TYPE(GorillaCosmetics::MaterialPreviewButton);
 
 bool GorillaCosmetics::MaterialPreviewButton::canPress = true;
 
-void GorillaCosmetics::MaterialPreviewButton::OnTriggerEnter(Il2CppObject* collider)
+void GorillaCosmetics::MaterialPreviewButton::OnTriggerEnter(Collider* collider)
 {
     if (!canPress) return;
-    Il2CppObject* handIndicator = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(collider, "GetComponentInParent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("", "GorillaTriggerColliderHandIndicator")}));
+    GorillaTriggerColliderHandIndicator* handIndicator = collider->GetComponentInParent<GorillaTriggerColliderHandIndicator*>();
     if (handIndicator)
 	{
         canPress = false;
-		Il2CppObject* component = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(collider, "GetComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("", "GorillaTriggerColliderHandIndicator")}));
+		GorillaTriggerColliderHandIndicator* component = collider->GetComponent<GorillaTriggerColliderHandIndicator*>();
 		if (!material) 
         {
             ERROR("Material Was Nullptr, returning");
@@ -28,7 +44,7 @@ void GorillaCosmetics::MaterialPreviewButton::OnTriggerEnter(Il2CppObject* colli
         }
         
         // do stuff
-		Il2CppObject* theMat = material->get_material();
+		GameObject* theMat = material->get_material();
         std::string name = material->get_descriptor().get_name();
         if(theMat)
 		{
@@ -45,12 +61,13 @@ void GorillaCosmetics::MaterialPreviewButton::OnTriggerEnter(Il2CppObject* colli
 
 		if (component)
 		{
-            Il2CppObject* gorillaTagger = CRASH_UNLESS(il2cpp_utils::RunMethod("", "GorillaTagger", "get_Instance"));
-            bool isLeftHand = CRASH_UNLESS(il2cpp_utils::GetFieldValue<bool>(component, "isLeftHand"));
-            float tapHapticStrength = CRASH_UNLESS(il2cpp_utils::GetFieldValue<float>(gorillaTagger, "tapHapticStrength"));
-            float tapHapticDuration = CRASH_UNLESS(il2cpp_utils::GetFieldValue<float>(gorillaTagger, "tapHapticDuration"));
+            GorillaTagger* gorillaTagger = GorillaTagger::get_Instance();
 
-            CRASH_UNLESS(il2cpp_utils::RunMethod(gorillaTagger, "StartVibration", isLeftHand, tapHapticStrength / 2.0f, tapHapticDuration));            
+            bool isLeftHand = component->isLeftHand;
+            float tapHapticStrength = gorillaTagger->tapHapticStrength;
+            float tapHapticDuration = gorillaTagger->tapHapticDuration;
+
+            gorillaTagger->StartVibration(component->isLeftHand,  tapHapticStrength / 2.0f, tapHapticDuration);        
 		}
 
         UpdateMaterialValue();
@@ -72,13 +89,15 @@ void GorillaCosmetics::MaterialPreviewButton::UpdateMaterialValue()
     // get material name
     std::string material = this->material->get_descriptor().get_name();
 
-    Il2CppObject* gorillaTagger = *il2cpp_utils::RunMethod("", "GorillaTagger", "get_Instance");
-    Il2CppObject* offlineVRRig = *il2cpp_utils::GetFieldValue(gorillaTagger, "offlineVRRig");
+    // get the gorilla tagger
+    GorillaTagger* gorillaTagger = GorillaTagger::get_Instance();
+    // get offline VR rig
+    VRRig* offlineVRRig = gorillaTagger->offlineVRRig;
 
     // because we always keep the hat name in the rigs, we can just get the hat name from that
-    Il2CppString* hatCS = *il2cpp_utils::GetFieldValue<Il2CppString*>(offlineVRRig, "hat");
-    Il2CppString* face = *il2cpp_utils::GetFieldValue<Il2CppString*>(offlineVRRig, "face");
-    Il2CppString* badge = *il2cpp_utils::GetFieldValue<Il2CppString*>(offlineVRRig, "badge");
+    Il2CppString* hatCS = offlineVRRig->hat;
+    Il2CppString* face = offlineVRRig->face;
+    Il2CppString* badge = offlineVRRig->badge;
     
     std::string hat = to_utf8(csstrtostr(hatCS));
     
@@ -102,7 +121,7 @@ void GorillaCosmetics::MaterialPreviewButton::UpdateMaterialValue()
     
     if (offlineVRRig) // if offline rig is defined, localupdate it
     {
-        il2cpp_utils::RunMethod(offlineVRRig, "LocalUpdateCosmetics", badge, face, hatMessage);
+        offlineVRRig->LocalUpdateCosmetics(badge, face, hatMessage);
     }
     else
     {
@@ -110,11 +129,11 @@ void GorillaCosmetics::MaterialPreviewButton::UpdateMaterialValue()
     }
 
     // this is for online play
-    Il2CppObject* myVRRig = *il2cpp_utils::GetFieldValue(gorillaTagger, "myVRRig");
+    VRRig* myVRRig = gorillaTagger->myVRRig;
     if (myVRRig)
     {
         // again, just a copy of that GorillaHatButtonParent method
-        Il2CppObject* photonView = *il2cpp_utils::RunMethod(myVRRig, "get_photonView");
+        PhotonView* photonView = myVRRig->get_photonView();
         static Il2CppString* methodName = il2cpp_utils::createcsstr("UpdateCosmetics", il2cpp_utils::StringType::Manual);
         
         Array<Il2CppObject*>* argsArray = reinterpret_cast<Array<Il2CppObject*>*>(il2cpp_functions::array_new(classof(Il2CppObject*), 3));
@@ -122,9 +141,8 @@ void GorillaCosmetics::MaterialPreviewButton::UpdateMaterialValue()
         argsArray->values[1] = (Il2CppObject*)face;
         argsArray->values[2] = (Il2CppObject*)hatMessage;
         
-        il2cpp_utils::RunMethod(photonView, "RPC", methodName, 0, argsArray);
-
-        il2cpp_utils::RunMethod("Photon.Pun", "PhotonNetwork", "SendAllOutgoingCommands");
+        photonView->RPC(methodName, RpcTarget::All, argsArray);
+        PhotonNetwork::SendAllOutgoingCommands();
     }
     else
     {

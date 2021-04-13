@@ -10,18 +10,18 @@
     "dependencies": [
         {
             "id": "monkecodegen",
-            "version": "^0.2.2",
-            "downloadIfMissing": "https://github.com/RedBrumbler/MonkeCodegen/releases/download/0.2.2/MonkeCodegen.qmod"
+            "version": "^0.2.3",
+            "downloadIfMissing": "https://github.com/RedBrumbler/MonkeCodegen/releases/download/0.2.3/MonkeCodegen.qmod"
         }
     ],
     "modFiles": [
         "libgorillacosmetics.so"
     ],
     "libraryFiles": [
-        "libbeatsaber-hook_1_3_0.so",
+        "libbeatsaber-hook_1_3_3.so",
         "libcustom-types.so",
         "libzip.so",
-        "libquest-cosmetic-loader_0_1_2.so"
+        "libquest-cosmetic-loader_0_1_3.so"
     ],
     "fileCopies": [
         {

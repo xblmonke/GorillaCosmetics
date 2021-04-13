@@ -3,9 +3,12 @@
 #include "custom-types/shared/macros.hpp"
 #include "Types/Selector/HatRackSelector.hpp"
 
-DECLARE_CLASS(GorillaCosmetics, HatRackSelectorButton, "UnityEngine", "MonoBehaviour", sizeof(Il2CppObject) + sizeof(void*)/* * 2 + sizeof(bool)*/,
+#include "UnityEngine/MonoBehaviour.hpp"
+#include "UnityEngine/Collider.hpp"
+
+DECLARE_CLASS_CODEGEN(GorillaCosmetics, HatRackSelectorButton, UnityEngine::MonoBehaviour,
     DECLARE_METHOD(void, Awake);
-    DECLARE_METHOD(void, OnTriggerEnter, Il2CppObject* collider);
+    DECLARE_METHOD(void, OnTriggerEnter, UnityEngine::Collider* collider);
     DECLARE_INSTANCE_FIELD(HatRackSelector*, selector);
     DECLARE_INSTANCE_FIELD(bool, next);
     DECLARE_STATIC_FIELD(bool, canPress);

@@ -227,7 +227,6 @@ namespace GorillaCosmetics
 
         std::vector<Il2CppClass*> colliderKlass = {il2cpp_utils::GetClassFromName("UnityEngine", "Collider")};
         HatRackSelector* rackSelector = *il2cpp_utils::RunGenericMethod<HatRackSelector*>(HatRack, "AddComponent", std::vector<Il2CppClass*>{classof(HatRackSelector*)});
-        rackSelector->Init();
         // if more than 1 rack is going to be used
         if (rackCount > 1)
         {
@@ -278,7 +277,7 @@ namespace GorillaCosmetics
                 {
                     Hat hat = get_hat(hatsLeft - index[j] - 1);
                     Il2CppObject* collider = hatPosColliders->values[j];
-                    HatPreview(hat, collider);
+                    HatPreview(hat, (Collider*)collider);
                 }
             } 
             else // if the last one (may or may not be full)
@@ -297,7 +296,7 @@ namespace GorillaCosmetics
                 {   
                     Hat hat = get_hat(index[j]);
                     Il2CppObject* collider = hatPosColliders->values[j];
-                    HatPreview(hat, collider);
+                    HatPreview(hat, (Collider*)collider);
                 }
             }
         }
@@ -319,7 +318,6 @@ namespace GorillaCosmetics
         Il2CppObject* preview = *il2cpp_utils::RunMethod(previewTransform, "get_gameObject");
 
         HatRackSelector* matSelector = *il2cpp_utils::RunGenericMethod<HatRackSelector*>(mirror, "AddComponent", std::vector<Il2CppClass*>{classof(HatRackSelector*)});
-        matSelector->Init();
         // if more than 1 add a selector
         if (materialPageCount > 1)
         {
@@ -365,7 +363,7 @@ namespace GorillaCosmetics
                     int matIndex = materialsLeft - j - 1;
                     Material material = GorillaMaterialObjects[matIndex];
                     Vector3 pos = {0.0f, (-0.5f * scale) - (scale * j) - 0.05f, 0.0f};
-                    MaterialPreview(material, thePageTransform, pos, scale * 0.85f);
+                    MaterialPreview(material, (Transform*)thePageTransform, pos, scale * 0.85f);
                 }
             }
             else // if the last one (may or may not be full)
@@ -380,7 +378,7 @@ namespace GorillaCosmetics
                     Material material = GorillaMaterialObjects[matIndex];
 
                     Vector3 pos = {0.0f, (-0.5f * scale) - (scale * j) - 0.05f, 0.0f};
-                    MaterialPreview(material, previewTransform, pos, scale * 0.85f);
+                    MaterialPreview(material, (Transform*)previewTransform, pos, scale * 0.85f);
                 }
             }
         }

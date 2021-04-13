@@ -12,24 +12,31 @@
 #include "beatsaber-hook/shared/utils/typedefs.h"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 
+#include "UnityEngine/SkinnedMeshRenderer.hpp"
 #include "UnityEngine/Material.hpp"
 #include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/Transform.hpp"
 #include "UnityEngine/Object.hpp"
 #include "UnityEngine/Color.hpp"
 #include "UnityEngine/Vector3.hpp"
 #include "UnityEngine/Quaternion.hpp"
+#include "UnityEngine/Resources.hpp"
+
+#include "GlobalNamespace/GorillaTagger.hpp"
+#include "GlobalNamespace/VRMap.hpp"
+#include "Photon/Pun/PhotonView.hpp"
 
 using namespace UnityEngine;
+using namespace Photon::Pun;
 
 namespace GorillaCosmetics::CosmeticUtils
 {
     // il2cpp'd
-    void RefreshPlayer(Il2CppObject* rig)
+    void RefreshPlayer(GlobalNamespace::VRRig* rig)
     {
         if (rig)
         {
-            int currentIndex = CRASH_UNLESS(il2cpp_utils::GetFieldValue<int>(rig, "currentMatIndex"));
-            ChangeMaterial(rig, currentIndex);
+            ChangeMaterial(rig, rig->setMatIndex);
             ChangeHat(rig);
         }
     }
@@ -37,47 +44,36 @@ namespace GorillaCosmetics::CosmeticUtils
     // il2cpp'd
     void RefreshLocalPlayer()
     {
-        Il2CppObject* gorillaTagger = CRASH_UNLESS(il2cpp_utils::RunMethod("", "GorillaTagger", "get_Instance"));
-        Il2CppObject* offlineVRRig = CRASH_UNLESS(il2cpp_utils::GetFieldValue(gorillaTagger, "offlineVRRig"));
-        Il2CppObject* myVRRig = CRASH_UNLESS(il2cpp_utils::GetFieldValue(gorillaTagger, "myVRRig"));
+        GlobalNamespace::GorillaTagger* gorillaTagger = GlobalNamespace::GorillaTagger::get_Instance();
         
-        RefreshPlayer(offlineVRRig);
-        RefreshPlayer(myVRRig);
+        RefreshPlayer(gorillaTagger->offlineVRRig);
+        RefreshPlayer(gorillaTagger->myVRRig);
     }
     
     // il2cpp'd
     void RefreshAllPlayers()
     {
-        Array<Il2CppObject*>* allRigs = CRASH_UNLESS(il2cpp_utils::RunMethod<Array<Il2CppObject*>*>("UnityEngine", "GameObject", "FindObjectsOfType", il2cpp_utils::GetSystemType("", "VRRig")));
+        Array<GlobalNamespace::VRRig*>* allRigs = Object::FindObjectsOfType<GlobalNamespace::VRRig*>();
         int length = allRigs->Length();
-        
         for(int i = 0; i < length; i++)
         {
-            Il2CppObject* vrRig = allRigs->values[i];
+            GlobalNamespace::VRRig* vrRig = allRigs->values[i];
             RefreshPlayer(vrRig);
         }
     }
 
     // il2cpp'd
-    bool IsLocalPlayer(Il2CppObject* rig)
+    bool IsLocalPlayer(GlobalNamespace::VRRig* rig)
     {
-        bool isOfflineVRRig = CRASH_UNLESS(il2cpp_utils::GetFieldValue<bool>(rig, "isOfflineVRRig"));
-        bool isMyPlayer = CRASH_UNLESS(il2cpp_utils::GetFieldValue<bool>(rig, "isMyPlayer"));
-        Il2CppObject* photonView = *il2cpp_utils::RunMethod(rig, "get_photonView");
-        bool IsMine = photonView ? CRASH_UNLESS(il2cpp_utils::RunMethod<bool>(photonView, "get_IsMine")) : false;
+        bool isOfflineVRRig = rig->isOfflineVRRig;
+        bool isMyPlayer = rig->isMyPlayer;
+        PhotonView* photonView = rig->get_photonView();
+        bool IsMine = photonView ? photonView->get_IsMine() : false;
         return isOfflineVRRig || isMyPlayer || IsMine;
     }
 
-    bool IsMyPlayer(Il2CppObject* rig)
-    {
-        bool isMyPlayer = CRASH_UNLESS(il2cpp_utils::GetFieldValue<bool>(rig, "isMyPlayer"));
-        Il2CppObject* photonView = *il2cpp_utils::RunMethod(rig, "get_photonView");
-        bool IsMine = photonView ? CRASH_UNLESS(il2cpp_utils::RunMethod<bool>(photonView, "get_IsMine")) : false;
-        return isMyPlayer || IsMine;
-    }
-
     // il2cpp'd 
-    void ChangeMaterial(Il2CppObject* rig, int materialIndex)
+    void ChangeMaterial(GlobalNamespace::VRRig* rig, int materialIndex)
     {
         // this method is pretty much exclusively used for the local player now, so only the local player should get updated by this
         // for other players there is the variant that uses a material name to find which material to select
@@ -86,62 +82,59 @@ namespace GorillaCosmetics::CosmeticUtils
         if (materialIndex == 0) // if not it or infected
         {
             // default mat
-            Material material = AssetLoader::SelectedMaterial();
-            Il2CppObject* theMatObj = material.get_material();
-            Il2CppObject* mainSkin = CRASH_UNLESS(il2cpp_utils::GetFieldValue(rig, "mainSkin"));
-            Il2CppObject* instantiatedMat = nullptr;
+            GorillaCosmetics::Material material = AssetLoader::SelectedMaterial();
+            GameObject* theMatObj = material.get_material();
+            SkinnedMeshRenderer* mainSkin = rig->mainSkin;
+            UnityEngine::Material* instantiatedMat = nullptr;
             if (theMatObj)
             {
-                Il2CppObject* renderer = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(theMatObj, "GetComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("UnityEngine", "Renderer")}));
-                Il2CppObject* originalMat = CRASH_UNLESS(il2cpp_utils::RunMethod(renderer, "get_material"));
-                instantiatedMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", originalMat));
+                Renderer* renderer = theMatObj->GetComponent<Renderer*>();
+                instantiatedMat = Object::Instantiate(renderer->get_material());
             }
             else // default material time boi
             {
                 INFO("Material was nullptr, setting default");
-                Il2CppObject* originalMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Resources", "Load", il2cpp_utils::createcsstr("objects/treeroom/materials/lightfur")));
-                instantiatedMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", originalMat));
+                UnityEngine::Material* originalMat = Resources::Load<UnityEngine::Material*>(il2cpp_utils::createcsstr("objects/treeroom/materials/lightfur"));
+                instantiatedMat = Object::Instantiate(originalMat);
             }
 
             // custom colors changed, you need to get the color of materialsToChangeTo[0] now
             if (material.get_config().get_customColors())
             {
                 INFO("Material Had custom colors, setting them");
-                Array<Il2CppObject*>* materialsToChangeTo = *il2cpp_utils::GetFieldValue<Array<Il2CppObject*>*>(rig, "materialsToChangeTo");
-                Il2CppObject* mat0 = materialsToChangeTo->values[0];
-                Color color = *il2cpp_utils::RunMethod<Color>(mat0, "get_color");
+                UnityEngine::Material* mat0 = rig->materialsToChangeTo->values[0];
+                Color color = mat0->get_color();
                 
-                CRASH_UNLESS(il2cpp_utils::RunMethod(instantiatedMat, "set_color", color));
+                instantiatedMat->set_color(color);
             }
 
-            il2cpp_utils::RunMethod(mainSkin, "set_material", instantiatedMat);
+            mainSkin->set_material(instantiatedMat);
         }
         else if (materialIndex > 0) // if infected or it
         {
-            Material material = AssetLoader::SelectedInfectedMaterial();
-            Il2CppObject* theMatObj = material.get_material();
+            GorillaCosmetics::Material material = AssetLoader::SelectedInfectedMaterial();
+            GameObject* theMatObj = material.get_material();
             if (theMatObj)
             {
-                Il2CppObject* renderer = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(theMatObj, "GetComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("UnityEngine", "Renderer")}));
-                Il2CppObject* originalMat = CRASH_UNLESS(il2cpp_utils::RunMethod(renderer, "get_material"));
-                Il2CppObject* instantiatedMat = UnityEngine::Object::Instantiate((UnityEngine::Material*)originalMat);
+                Renderer* renderer = theMatObj->GetComponent<Renderer*>();
+                UnityEngine::Material* instantiatedMat = UnityEngine::Object::Instantiate(renderer->get_material());
                 
-                Il2CppObject* mainSkin = CRASH_UNLESS(il2cpp_utils::GetFieldValue(rig, "mainSkin"));
+                SkinnedMeshRenderer* mainSkin = rig->mainSkin;
 
                 if (material.get_config().get_customColors())
                 {
-                    Il2CppObject* originalMat = CRASH_UNLESS(il2cpp_utils::RunMethod(mainSkin, "get_material"));
-                    Color color = CRASH_UNLESS(il2cpp_utils::RunMethod<Color>(originalMat, "get_color"));
+                    UnityEngine::Material* originalMat = mainSkin->get_material();
+                    Color color = originalMat->get_color();
                     
-                    CRASH_UNLESS(il2cpp_utils::RunMethod(instantiatedMat, "set_color", color));
+                    instantiatedMat->set_color(color);
                 }
-                CRASH_UNLESS(il2cpp_utils::RunMethod(mainSkin, "set_material", instantiatedMat));
+                mainSkin->set_material(instantiatedMat);
             }
         }
     }
 
     // il2cpp'd 
-    void ChangeMaterial(Il2CppObject* rig, int materialIndex, std::string materialName)
+    void ChangeMaterial(GlobalNamespace::VRRig* rig, int materialIndex, std::string materialName)
     {
         // this method is used for all players, and uses materialName to select the material to use
         if (!AssetLoader::IsLoaded()) AssetLoader::Load();
@@ -157,62 +150,58 @@ namespace GorillaCosmetics::CosmeticUtils
         // get the selected material index
         int selectedMaterial = AssetLoader::SelectedMaterialFromConfig(materialName);
         // get that material
-        Material material = AssetLoader::get_mat(selectedMaterial);
+        GorillaCosmetics::Material material = AssetLoader::get_mat(selectedMaterial);
 
         // if not it or infected
         if (materialIndex == 0)
         {
             // default mat
-            Il2CppObject* theMatObj = material.get_material();
-            Il2CppObject* mainSkin = CRASH_UNLESS(il2cpp_utils::GetFieldValue(rig, "mainSkin"));
-            Il2CppObject* instantiatedMat = nullptr;
+            GameObject* theMatObj = material.get_material();
+            SkinnedMeshRenderer* mainSkin = rig->mainSkin;
+            UnityEngine::Material* instantiatedMat = nullptr;
             if (theMatObj)
             {
-                Il2CppObject* renderer = CRASH_UNLESS(il2cpp_utils::RunGenericMethod(theMatObj, "GetComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("UnityEngine", "Renderer")}));
-                Il2CppObject* originalMat = CRASH_UNLESS(il2cpp_utils::RunMethod(renderer, "get_material"));
-                instantiatedMat = UnityEngine::Object::Instantiate((UnityEngine::Material*)originalMat);
+                Renderer* renderer = theMatObj->GetComponent<Renderer*>();
+                instantiatedMat = Object::Instantiate(renderer->get_material());
             }
             else // default material time boi
             {
                 INFO("Material was nullptr, setting default");
                 // Resources.Load<Material>("objects/treeroom/materials/lightfur");
-                Il2CppObject* originalMat = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Resources", "Load", il2cpp_utils::createcsstr("objects/treeroom/materials/lightfur")));
-                instantiatedMat = UnityEngine::Object::Instantiate((UnityEngine::Material*)originalMat);
+                UnityEngine::Material* originalMat = Resources::Load<UnityEngine::Material*>(il2cpp_utils::createcsstr("objects/treeroom/materials/lightfur"));
+                instantiatedMat = Object::Instantiate(originalMat);
             }
 
             // also here, custom colors need to be done differently now
             if (material.get_config().get_customColors())
             {
                 INFO("Material Had custom colors, setting them");
-                Array<Il2CppObject*>* materialsToChangeTo = *il2cpp_utils::GetFieldValue<Array<Il2CppObject*>*>(rig, "materialsToChangeTo");
-                Il2CppObject* mat0 = materialsToChangeTo->values[0];
-                Color color = *il2cpp_utils::RunMethod<Color>(mat0, "get_color");
-
-                CRASH_UNLESS(il2cpp_utils::RunMethod(instantiatedMat, "set_color", color));
+                UnityEngine::Material* mat0 = rig->materialsToChangeTo->values[0];
+                Color color = mat0->get_color();
+                
+                instantiatedMat->set_color(color);
             }
-
-            il2cpp_utils::RunMethod(mainSkin, "set_material", instantiatedMat);
+            mainSkin->set_material(instantiatedMat);
         }
-
         // skipping custom infected materials because that seems sketch to make custom (just select default and then boom you're unaware of what they are)
     }
 
-    void ChangeHat(Il2CppObject* rig)
+    void ChangeHat(GlobalNamespace::VRRig* rig)
     {
         // local player change hat method
         if (!AssetLoader::IsLoaded()) AssetLoader::Load();
         if (!rig) return; 
 
-        Il2CppObject* head = CRASH_UNLESS(il2cpp_utils::GetFieldValue(rig, "head"));
-        Il2CppObject* rigTarget = CRASH_UNLESS(il2cpp_utils::GetFieldValue(head, "rigTarget"));
-        static Il2CppString* hatName = il2cpp_utils::createcsstr("Hat", il2cpp_utils::StringType::Manual);
+        GlobalNamespace::VRMap* head = rig->head;
+        Transform* rigTarget = head->rigTarget;
+        static Il2CppString* hatNameCS = il2cpp_utils::createcsstr("Hat", il2cpp_utils::StringType::Manual);
         
         // destroy original
-        Il2CppObject* existingHat = *il2cpp_utils::RunMethod(rigTarget, "Find", hatName);
+        Transform* existingHat = rigTarget->Find(hatNameCS);
         if (existingHat)
         {
-            Il2CppObject* hatGO = CRASH_UNLESS(il2cpp_utils::RunMethod(existingHat, "get_gameObject"));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(hatGO, "Destroy", hatGO));
+            GameObject* hatGO = existingHat->get_gameObject();
+            Object::Destroy(hatGO);
         }
 
         if (IsLocalPlayer(rig))
@@ -222,31 +211,29 @@ namespace GorillaCosmetics::CosmeticUtils
 
             if (name != "None" && name != "none")
             {
-                Il2CppObject* theHat = hat.get_hat();
+                GameObject* theHat = hat.get_hat();
                 // if no hat pointer found just return and act as if it was none
                 if (!theHat) return;
-                Il2CppObject* hatObject = UnityEngine::Object::Instantiate((GameObject*)theHat);
-                il2cpp_utils::RunMethod(hatObject, "SetActive", true);
-                CRASH_UNLESS(il2cpp_utils::RunMethod(hatObject, "set_name", hatName));
+                GameObject* hatObject = Object::Instantiate(theHat);
+                hatObject->SetActive(true);
+                hatObject->set_name(hatNameCS);
                 
-                Il2CppObject* hatTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(hatObject, "get_transform"));
+                Transform* hatTransform = hatObject->get_transform();
 
-                CRASH_UNLESS(il2cpp_utils::RunMethod(hatTransform, "SetParent", rigTarget));
+                hatTransform->SetParent(rigTarget);
 
-                Vector3 scale = {0.25f, 0.25f, 0.25f};
-                Vector3 pos = {0.0f, 0.365f, 0.04f};
-                Quaternion rotation = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>("UnityEngine", "Quaternion", "get_identity"));
+                Vector3 pos = {0.0f, 0.365f, 0.4f};
                 Vector3 rot = {0.0f, 90.0f, 10.0f};
 
-                CRASH_UNLESS(il2cpp_utils::RunMethod(hatTransform, "set_localScale", scale));
-                CRASH_UNLESS(il2cpp_utils::RunMethod(hatTransform, "set_localPosition", pos));
-                CRASH_UNLESS(il2cpp_utils::RunMethod(hatTransform, "set_localRotation", rotation));
-                CRASH_UNLESS(il2cpp_utils::RunMethod(hatTransform, "Rotate", rot));
+                hatTransform->set_localScale(Vector3::get_one() * 0.25f);
+                hatTransform->set_localPosition(pos);
+                hatTransform->set_localRotation(Quaternion::get_identity());
+                hatTransform->Rotate(rot);
             }
         }
     }
 
-    void ChangeHat(Il2CppObject* rig, std::string hatName)
+    void ChangeHat(GlobalNamespace::VRRig* rig, std::string hatName)
     {
         // used for anything besides the local player, just makes it a bit easier to differentiate the 2
         if (!AssetLoader::IsLoaded()) AssetLoader::Load();
@@ -259,16 +246,16 @@ namespace GorillaCosmetics::CosmeticUtils
             return;   
         }
 
-        Il2CppObject* head = CRASH_UNLESS(il2cpp_utils::GetFieldValue(rig, "head"));
-        Il2CppObject* rigTarget = CRASH_UNLESS(il2cpp_utils::GetFieldValue(head, "rigTarget"));
-        static Il2CppString* hatTransformName = il2cpp_utils::createcsstr("Hat", il2cpp_utils::StringType::Manual);
-
+        GlobalNamespace::VRMap* head = rig->head;
+        Transform* rigTarget = head->rigTarget;
+        static Il2CppString* hatNameCS = il2cpp_utils::createcsstr("Hat", il2cpp_utils::StringType::Manual);
+        
         // destroy original
-        Il2CppObject* existingHat = CRASH_UNLESS(il2cpp_utils::RunMethod(rigTarget, "Find", hatTransformName));
+        Transform* existingHat = rigTarget->Find(hatNameCS);
         if (existingHat)
         {
-            Il2CppObject* hatGO = CRASH_UNLESS(il2cpp_utils::RunMethod(existingHat, "get_gameObject"));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(hatGO, "Destroy", hatGO));
+            GameObject* hatGO = existingHat->get_gameObject();
+            Object::Destroy(hatGO);
         }
 
         int index = AssetLoader::SelectedHatFromConfig(hatName);
@@ -276,27 +263,23 @@ namespace GorillaCosmetics::CosmeticUtils
         std::string name = hat.get_descriptor().get_name();
         if (name != "None" && name != "none")
         {
-            Il2CppObject* theHat = hat.get_hat();
-            // if hat not found or something just return and act as if it is a None hat
-            if (!theHat) return;
-            
-            Il2CppObject* hatObject = UnityEngine::Object::Instantiate((GameObject*)theHat);
-            il2cpp_utils::RunMethod(hatObject, "SetActive", true);
-            CRASH_UNLESS(il2cpp_utils::RunMethod(hatObject, "set_name", hatTransformName));
-            
-            Il2CppObject* hatTransform = CRASH_UNLESS(il2cpp_utils::RunMethod(hatObject, "get_transform"));
+            GameObject* theHat = hat.get_hat();
+                // if no hat pointer found just return and act as if it was none
+                if (!theHat) return;
+                GameObject* hatObject = Object::Instantiate(theHat);
+                hatObject->SetActive(true);
+                hatObject->set_name(hatNameCS);
+                
+                Transform* hatTransform = hatObject->get_transform();
 
-            CRASH_UNLESS(il2cpp_utils::RunMethod(hatTransform, "SetParent", rigTarget));
+                hatTransform->SetParent(rigTarget);
+                Vector3 pos = {0.0f, 0.365f, 0.4f};
+                Vector3 rot = {0.0f, 90.0f, 10.0f};
 
-            Vector3 scale = {0.25f, 0.25f, 0.25f};
-            Vector3 pos = {0.0f, 0.365f, 0.04f};
-            
-            Quaternion rotation = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>("UnityEngine", "Quaternion", "get_identity"));
-            Vector3 rot = {0.0f, 90.0f, 10.0f};
-            CRASH_UNLESS(il2cpp_utils::RunMethod(hatTransform, "set_localScale", scale));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(hatTransform, "set_localPosition", pos));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(hatTransform, "set_localRotation", rotation));
-            CRASH_UNLESS(il2cpp_utils::RunMethod(hatTransform, "Rotate", rot));
+                hatTransform->set_localScale(Vector3::get_one() * 0.25f);
+                hatTransform->set_localPosition(pos);
+                hatTransform->set_localRotation(Quaternion::get_identity());
+                hatTransform->Rotate(rot);
         }
     }
 }

@@ -6,26 +6,24 @@
 #include "typedefs.h"
 
 #include "UnityEngine/Object.hpp"
-#include "UnityEngine/GameObject.hpp"
-
-#define run(value...) CRASH_UNLESS(il2cpp_utils::RunMethod(value))
+#include "UnityEngine/Transform.hpp"
 
 using namespace CosmeticsLoader;
 using namespace UnityEngine;
 
-GorillaCosmetics::HatPreview::HatPreview(Hat hat, Il2CppObject* collider)
+GorillaCosmetics::HatPreview::HatPreview(Hat hat, Collider* collider)
 {
     INFO("Creating Hat preview for %s", hat.get_descriptor().get_name().c_str());
-    Il2CppObject* theHat = hat.get_hat();
+    GameObject* theHat = hat.get_hat();
     if (theHat)
     {
-        gameObject = UnityEngine::Object::Instantiate((GameObject*)theHat);
+        gameObject = UnityEngine::Object::Instantiate(theHat);
     }
     else // fake hat time
     {
         std::string path = "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/GorillaCosmetics/None";
         new CosmeticLoader(path, [&](std::string name, Il2CppObject* obj){
-            gameObject = obj;
+            gameObject = (GameObject*)obj;
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
     }
     if (!gameObject)
@@ -35,28 +33,25 @@ GorillaCosmetics::HatPreview::HatPreview(Hat hat, Il2CppObject* collider)
     }
     
     INFO("Getting transform");
-    il2cpp_utils::RunMethod(gameObject, "SetActive", true);
-    Il2CppObject* transform = run(gameObject, "get_transform");
-    Il2CppObject* colliderTransform = run(collider, "get_transform");
-    il2cpp_utils::RunMethod(transform, "SetParent", colliderTransform);
-    Il2CppObject* colliderGO = run(collider, "get_gameObject");
 
-    Vector3 pos = {0.0f, 0.0f, 0.0f};
-    Quaternion rot = CRASH_UNLESS(il2cpp_utils::RunMethod<Quaternion>(colliderTransform, "get_rotation"));
-    Vector3 scale = {0.7f, 0.7f, 0.7f};
+    gameObject->SetActive(true);
+    Transform* transform = gameObject->get_transform();
+    Transform* colliderTransform = collider->get_transform();
+    transform->SetParent(colliderTransform);
 
-    run(transform, "set_localScale", scale);
+    GameObject* colliderGO = collider->get_gameObject();
 
-    //run(transform, "SetParent", colliderTransform);
+    transform->set_localScale(Vector3::get_one() * 0.7f);
 
-    run(gameObject, "set_layer", 18);
-    run(transform, "set_localPosition", pos);
-    run(transform, "set_rotation", rot);
-    run(gameObject, "DontDestroyOnLoad", gameObject);
+    gameObject->set_layer(18);
+    transform->set_localPosition(Vector3::get_zero());
+    transform->set_rotation(colliderTransform->get_rotation());
+    Object::DontDestroyOnLoad(gameObject);
 
-    run(collider, "set_isTrigger", true);
-    run(colliderGO, "set_layer", 18);
+    collider->set_isTrigger(true);
+    colliderGO->set_layer(18);
 
-    HatPreviewButton* button = CRASH_UNLESS(il2cpp_utils::RunGenericMethod<HatPreviewButton*>(colliderGO, "AddComponent", std::vector<Il2CppClass*>{il2cpp_utils::GetClassFromName("GorillaCosmetics", "HatPreviewButton")}));
+    HatPreviewButton* button = colliderGO->AddComponent<HatPreviewButton*>();
+    
     button->hat = new Hat(hat.get_manifest().get_filePath());
 }
