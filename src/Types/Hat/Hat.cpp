@@ -1,6 +1,7 @@
 #include "Types/Hat/Hat.hpp"
 #include "quest-cosmetic-loader/shared/CosmeticLoader.hpp"
 #include "logging.hpp"
+#include "Utils/LightingUtils.hpp"
 
 using namespace CosmeticsLoader;
 using namespace UnityEngine;
@@ -14,6 +15,7 @@ namespace GorillaCosmetics
         CosmeticLoader<HatManifest>* loader = new CosmeticLoader<HatManifest>(manifest, [&, loader](std::string name , Il2CppObject* obj){
             INFO("Loaded Hat %s", this->manifest.get_descriptor().get_name().c_str());            
             this->object = (GameObject*)obj;
+            LightingUtils::FixLighting(object);
             object->SetActive(false);
             //delete(loader);
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
