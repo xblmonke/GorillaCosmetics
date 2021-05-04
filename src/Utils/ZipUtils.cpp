@@ -1,5 +1,5 @@
 #include "Utils/ZipUtils.hpp"
-#include "libzip/shared/zip.h"
+#include "zip/shared/zip.h"
 #include "beatsaber-hook/shared/utils/utils-functions.h"
 #include "logging.hpp"
 #include "Utils/FileUtils.hpp"

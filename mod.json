@@ -3,15 +3,15 @@
     "name": "Gorilla Cosmetics",
     "id": "GorillaCosmetics",
     "author": "RedBrumbler",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "packageId": "com.AnotherAxiom.GorillaTag",
-    "packageVersion": "1.0.5",
+    "packageVersion": "1.0.6",
     "type": "Cosmetic",
     "dependencies": [
         {
             "id": "monkecodegen",
-            "version": "^0.2.4",
-            "downloadIfMissing": "https://github.com/RedBrumbler/MonkeCodegen/releases/download/0.2.4/MonkeCodegen.qmod"
+            "version": "^0.3.0",
+            "downloadIfMissing": "https://github.com/RedBrumbler/MonkeCodegen/releases/download/0.3.0/MonkeCodegen.qmod"
         }
     ],
     "modFiles": [
