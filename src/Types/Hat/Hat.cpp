@@ -15,7 +15,7 @@ namespace GorillaCosmetics
         CosmeticLoader<HatManifest>* loader = new CosmeticLoader<HatManifest>(manifest, [&, loader](std::string name , Il2CppObject* obj){
             INFO("Loaded Hat %s", this->manifest.get_descriptor().get_name().c_str());            
             this->object = (GameObject*)obj;
-            LightingUtils::FixLighting(object);
+            LightingUtils::FixLighting(object, 0.8f);
             object->SetActive(false);
             //delete(loader);
         }, "_Hat", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));

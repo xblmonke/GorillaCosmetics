@@ -18,7 +18,7 @@ namespace GorillaCosmetics
         CosmeticLoader<MaterialManifest>* loader = new CosmeticLoader<MaterialManifest>(manifest, [&, loader](std::string name , Il2CppObject* obj){
             INFO("Loaded Material %s", this->manifest.get_descriptor().get_name().c_str());            
             this->object = (GameObject*)obj;
-            LightingUtils::FixLighting(object, 0.3f);
+            LightingUtils::FixLighting(object, 0.7f);
             object->SetActive(false);
             //delete(loader);
         }, "_Material", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
