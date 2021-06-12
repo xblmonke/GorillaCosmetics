@@ -12,7 +12,7 @@ Compress-Archive -Path  "./extern/libbeatsaber-hook_1_3_3.so",`
                         "./libs/arm64-v8a/libcustom-types.so",`
                         "./libs/arm64-v8a/libgorillacosmetics.so",`
                         "./libs/arm64-v8a/libzip.so",`
-                        "./libs/arm64-v8a/libquest-cosmetic-loader_0_1_3.so",`
+                        "./libs/arm64-v8a/libquest-cosmetic-loader_0_1_4.so",`
                         "./ExtraFiles/default",`
                         "./ExtraFiles/Mirror",`
                         "./ExtraFiles/None",`
@@ -25,6 +25,7 @@ Compress-Archive -Path  "./extern/libbeatsaber-hook_1_3_3.so",`
                         "./ExtraFiles/Materials/Matrix.gmat",`
                         "./ExtraFiles/Materials/Rainbow.gmat",`
                         "./ExtraFiles/Materials/Unity_Default_Material.gmat",`
+                        "./cover.png",`
                         "./mod.json" -DestinationPath "./GorillaCosmetics.zip" -Update
 
 & copy-item -Force "./GorillaCosmetics.zip" "./GorillaCosmetics.qmod"

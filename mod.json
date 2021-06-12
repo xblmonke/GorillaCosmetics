@@ -3,15 +3,17 @@
     "name": "Gorilla Cosmetics",
     "id": "GorillaCosmetics",
     "author": "RedBrumbler",
-    "version": "1.2.5",
+    "version": "1.2.6",
     "packageId": "com.AnotherAxiom.GorillaTag",
-    "packageVersion": "1.0.7",
+    "packageVersion": "1.0.8",
+    "description": "Monke be fancy 🧐",
+    "coverImage": "cover.png",
     "type": "Cosmetic",
     "dependencies": [
         {
             "id": "monkecodegen",
-            "version": ">=0.4.0",
-            "downloadIfMissing": "https://github.com/RedBrumbler/MonkeCodegen/releases/download/0.4.0/MonkeCodegen.qmod"
+            "version": ">=0.5.0",
+            "downloadIfMissing": "https://github.com/RedBrumbler/MonkeCodegen/releases/download/0.5.0/MonkeCodegen.qmod"
         }
     ],
     "modFiles": [
@@ -22,7 +24,7 @@
         "libbeatsaber-hook_1_3_3.so",
         "libcustom-types.so",
         "libzip.so",
-        "libquest-cosmetic-loader_0_1_3.so"
+        "libquest-cosmetic-loader_0_1_4.so"
     ],
     "fileCopies": [
         {

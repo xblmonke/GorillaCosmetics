@@ -34,11 +34,11 @@ LOCAL_MODULE := custom-types
 LOCAL_EXPORT_C_INCLUDES := extern/custom-types
 LOCAL_SRC_FILES := extern/libcustom-types.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: quest-cosmetic-loader - version: 0.1.3
+# Creating prebuilt for dependency: quest-cosmetic-loader - version: 0.1.4
 include $(CLEAR_VARS)
-LOCAL_MODULE := quest-cosmetic-loader_0_1_3
+LOCAL_MODULE := quest-cosmetic-loader_0_1_4
 LOCAL_EXPORT_C_INCLUDES := extern/quest-cosmetic-loader
-LOCAL_SRC_FILES := extern/libquest-cosmetic-loader_0_1_3.so
+LOCAL_SRC_FILES := extern/libquest-cosmetic-loader_0_1_4.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: zip - version: 1.7.4
 include $(CLEAR_VARS)
@@ -46,11 +46,11 @@ LOCAL_MODULE := zip
 LOCAL_EXPORT_C_INCLUDES := extern/zip
 LOCAL_SRC_FILES := extern/libzip.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: monkecodegen - version: 0.4.0
+# Creating prebuilt for dependency: monkecodegen - version: 0.5.0
 include $(CLEAR_VARS)
-LOCAL_MODULE := monkecodegen_0_4_0
+LOCAL_MODULE := monkecodegen_0_5_0
 LOCAL_EXPORT_C_INCLUDES := extern/monkecodegen
-LOCAL_SRC_FILES := extern/libmonkecodegen_0_4_0.so
+LOCAL_SRC_FILES := extern/libmonkecodegen_0_5_0.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: beatsaber-hook - version: 1.3.5
 include $(CLEAR_VARS)
@@ -71,10 +71,10 @@ LOCAL_SRC_FILES += $(call rwildcard,extern/beatsaber-hook/src/inline-hook,*.c)
 LOCAL_SHARED_LIBRARIES += modloader
 LOCAL_SHARED_LIBRARIES += beatsaber-hook_1_3_5
 LOCAL_SHARED_LIBRARIES += custom-types
-LOCAL_SHARED_LIBRARIES += quest-cosmetic-loader_0_1_3
+LOCAL_SHARED_LIBRARIES += quest-cosmetic-loader_0_1_4
 LOCAL_SHARED_LIBRARIES += zip
-LOCAL_SHARED_LIBRARIES += monkecodegen_0_4_0
+LOCAL_SHARED_LIBRARIES += monkecodegen_0_5_0
 LOCAL_LDLIBS += -llog
-LOCAL_CFLAGS += -I'extern/libil2cpp/il2cpp/libil2cpp' -isystem 'extern' -I'extern/monkecodegen/include' -DID='"GorillaCosmetics"' -DVERSION='"1.2.5"' -I'./shared' -I'./extern' -Wno-inaccessible-base -Wno-invalid-offsetof
+LOCAL_CFLAGS += -I'extern/libil2cpp/il2cpp/libil2cpp' -isystem 'extern' -I'extern/monkecodegen/include' -DID='"GorillaCosmetics"' -DVERSION='"1.2.6"' -I'./shared' -I'./extern' -Wno-inaccessible-base -Wno-invalid-offsetof
 LOCAL_C_INCLUDES += ./include ./src
 include $(BUILD_SHARED_LIBRARY)
