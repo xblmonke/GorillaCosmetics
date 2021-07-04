@@ -13,6 +13,8 @@
 #include "Types/Selector/HatRackSelector.hpp"
 #include "Types/Selector/HatRackSelectorButton.hpp"
 
+#include "NeonButton.hpp"
+
 #include "custom-types/shared/register.hpp"
 
 #include "libil2cpp/il2cpp/libil2cpp/icalls/mscorlib/System/RuntimeTypeHandle.h"
@@ -31,6 +33,9 @@
 #include "Photon/Pun/PhotonView.hpp"
 #include "Photon/Pun/PhotonNetwork.hpp"
 #include "Photon/Pun/PhotonMessageInfo.hpp"
+
+#include "Utils/UnityUtils.hpp"
+#include "gorilla-utils/shared/GorillaUtils.hpp"
 
 ModInfo modInfo;
 
@@ -274,15 +279,31 @@ MAKE_HOOK_OFFSETLESS(VRRig_RequestCosmetics, void, GlobalNamespace::VRRig* self,
     VRRig_RequestCosmetics(self, info);
 }
 
-MAKE_HOOK_OFFSETLESS(VRRig_InitializeNoobMaterial, void, GlobalNamespace::VRRig* self, float red, float green, float blue)
+
+MAKE_HOOK_OFFSETLESS(VRRig_InitializeNoobMaterial, void, GlobalNamespace::VRRig* self, float red, float green, float blue, PhotonMessageInfo info)
 {
-    // when the noob material is intialized the mat needs to be updated to have the correct color
-    VRRig_InitializeNoobMaterial(self, red, green, blue);
+    float maxVal = UnityUtils::max(red, green, blue);
+
+    // if the highest value is above 1, just divide the entire color by that maximum value to preserve the color hue
+    if (maxVal > 1.0f && !config.overrideNeon)
+    {
+        red /= maxVal;
+        green /= maxVal;
+        blue /= maxVal;
+    } 
+    
+    VRRig_InitializeNoobMaterial(self, red, green, blue, info);
     // postfix
 
     // get user ID
     PhotonView* photonView = self->get_photonView();
     Player* owner = photonView ? photonView->get_Owner() : nullptr;
+
+    // if override and sending player is owner, override color
+    if (config.overrideNeon && info.Sender->Equals(owner))
+    {
+        self->InitializeNoobMaterialLocal(red, green, blue);
+    }
 
     Il2CppString* UserIDCS = owner ? owner->get_UserId() : nullptr;
     std::string UserID = UserIDCS ? to_utf8(csstrtostr(UserIDCS)) : "";
@@ -306,6 +327,9 @@ extern "C" void load()
 {
     Logger& logger = getLogger();
     if (!LoadConfig()) SaveConfig();
+    
+    GorillaUtils::Innit();
+
     INFO("Installing Hooks...");
 
     INSTALL_HOOK_OFFSETLESS(logger, VRRig_ChangeMaterial, il2cpp_utils::FindMethodUnsafe("", "VRRig", "ChangeMaterial", 1));
@@ -313,7 +337,7 @@ extern "C" void load()
     INSTALL_HOOK_OFFSETLESS(logger, VRRig_LocalUpdateCosmetics, il2cpp_utils::FindMethodUnsafe("", "VRRig", "LocalUpdateCosmetics", 3));
     INSTALL_HOOK_OFFSETLESS(logger, VRRig_UpdateCosmetics, il2cpp_utils::FindMethodUnsafe("", "VRRig", "UpdateCosmetics", 4));
     INSTALL_HOOK_OFFSETLESS(logger, VRRig_RequestCosmetics, il2cpp_utils::FindMethodUnsafe("", "VRRig", "RequestCosmetics", 1));
-    INSTALL_HOOK_OFFSETLESS(logger, VRRig_InitializeNoobMaterial, il2cpp_utils::FindMethodUnsafe("", "VRRig", "InitializeNoobMaterial", 3));
+    INSTALL_HOOK_OFFSETLESS(logger, VRRig_InitializeNoobMaterial, il2cpp_utils::FindMethodUnsafe("", "VRRig", "InitializeNoobMaterial", 4));
 
     INFO("Installed Hooks!");
 
@@ -322,6 +346,7 @@ extern "C" void load()
     custom_types::Register::RegisterType<MaterialPreviewButton>();
     custom_types::Register::RegisterType<HatPreviewButton>();
     custom_types::Register::RegisterTypes<HatRackSelector, HatRackSelectorButton>();
+    custom_types::Register::RegisterType<NeonButton>();
 
     INFO("Registered custom types!");
 

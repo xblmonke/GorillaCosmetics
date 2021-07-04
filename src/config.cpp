@@ -25,6 +25,7 @@ void SaveConfig()
     configuration.config.AddMember("applyHatsToOtherPlayers", config.applyHatsToOtherPlayers, allocator);
     configuration.config.AddMember("applyMaterialsToOtherPlayers", config.applyMaterialsToOtherPlayers, allocator);
     configuration.config.AddMember("applyInfectedMaterialsToOtherPlayers", config.applyInfectedMaterialsToOtherPlayers, allocator);
+    configuration.config.AddMember("overrideNeon", config.overrideNeon, allocator);
 
     configuration.Write();
     INFO("Saved Config!");
@@ -73,6 +74,13 @@ bool LoadConfig()
     else {
         foundEverything = false;
     }
+    if (d.HasMember("overrideNeon") && d["overrideNeon"].IsBool()) {
+        config.overrideNeon = d["overrideNeon"].GetBool();
+    }
+    else {
+        foundEverything = false;
+    }
+    
     if (foundEverything) INFO("Config Loaded Succesfully!");
     return foundEverything;
 }

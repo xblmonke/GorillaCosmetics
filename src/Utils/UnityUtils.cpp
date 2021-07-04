@@ -29,7 +29,7 @@ namespace UnityUtils
         int colliderLength = triggers->Length();
         for (int i = 0; i < colliderLength; i++)
         {
-                Object::DestroyImmediate(colliders->values[i]);
+                        Object::DestroyImmediate(colliders->values[i]);
         }
     }
 }

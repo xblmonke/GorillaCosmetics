@@ -37,6 +37,11 @@
       "id": "monkecodegen",
       "versionRange": "*",
       "additionalData": {}
+    },
+    {
+      "id": "gorilla-utils",
+      "versionRange": "*",
+      "additionalData": {}
     }
   ],
   "additionalData": {}

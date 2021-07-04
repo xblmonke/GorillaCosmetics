@@ -14,6 +14,8 @@
 #include "Types/Selector/HatRackSelector.hpp"
 #include "Types/Selector/HatRackSelectorButton.hpp"
 
+#include "NeonButton.hpp"
+
 #include <algorithm>
 #include <random>
 #include <chrono>
@@ -319,7 +321,14 @@ namespace GorillaCosmetics
         Transform* previewTransform = mirrorTransform->Find(previewName);
         GameObject* preview = previewTransform->get_gameObject();
 
-        HatRackSelector* matSelector = mirror->AddComponent<HatRackSelector*>();
+        Il2CppString* neonName = il2cpp_utils::createcsstr("Neon");
+        Transform* neonTransform = mirrorTransform->Find(neonName);
+        GameObject* neon = neonTransform->get_gameObject();
+
+        using MatSelector = HatRackSelector;
+        using MatSelectorButton = HatRackSelectorButton;
+
+        MatSelector* matSelector = mirror->AddComponent<MatSelector*>();
         // if more than 1 add a selector
         if (materialPageCount > 1)
         {
@@ -331,7 +340,7 @@ namespace GorillaCosmetics
                 INFO("Selector Button %d", i);
                 Collider* collider = buttonColliders->values[i];
                 GameObject* colliderGO = collider->get_gameObject();
-                HatRackSelectorButton* button = colliderGO->AddComponent<HatRackSelectorButton*>();
+                MatSelectorButton* button = colliderGO->AddComponent<MatSelectorButton*>();
                 
                 // what selector does it apply to?
                 button->selector = matSelector;
@@ -392,6 +401,8 @@ namespace GorillaCosmetics
         
         matSelector->UpdateRack();
 
+        neon->AddComponent<NeonButton*>();
+        
         mirror->SetActive(true);
         HatRack->SetActive(true);
         Loaded = true;
