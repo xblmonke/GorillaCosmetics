@@ -25,7 +25,7 @@ using namespace UnityEngine;
 using namespace GlobalNamespace;
 using namespace Photon::Pun;
 
-DEFINE_TYPE(GorillaCosmetics::NeonButton);
+DEFINE_TYPE(GorillaCosmetics, NeonButton);
 
 using namespace UnityEngine;
 

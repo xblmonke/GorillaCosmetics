@@ -23,9 +23,7 @@
 #include "Photon/Pun/PhotonView.hpp"
 #include "Photon/Pun/PhotonNetwork.hpp"
 
-DEFINE_TYPE(GorillaCosmetics::HatPreviewButton);
-
-bool GorillaCosmetics::HatPreviewButton::canPress = true;
+DEFINE_TYPE(GorillaCosmetics, HatPreviewButton);
 
 using namespace UnityEngine;
 using namespace GlobalNamespace;
@@ -33,11 +31,11 @@ using namespace Photon::Pun;
 
 void GorillaCosmetics::HatPreviewButton::OnTriggerEnter(Collider* collider)
 {
-    if (!canPress) return;
+    if (!canPress()) return;
     GorillaTriggerColliderHandIndicator* handIndicator = collider->GetComponentInParent<GorillaTriggerColliderHandIndicator*>();
     if (handIndicator)
 	{
-        canPress = false;
+        canPress() = false;
 		GorillaTriggerColliderHandIndicator* component = collider->GetComponent<GorillaTriggerColliderHandIndicator*>();
 
 		if (!hat)
@@ -81,7 +79,7 @@ void GorillaCosmetics::HatPreviewButton::OnTriggerEnter(Collider* collider)
             {
                 usleep(1000);
             }
-            canPress = true;
+            canPress() = true;
         });
 
         rePress.detach();

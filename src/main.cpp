@@ -1,5 +1,6 @@
 #include "logging.hpp"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
+#include "beatsaber-hook/shared/utils/hooking.hpp"
 
 #include "config.hpp"
 
@@ -39,13 +40,14 @@
 
 ModInfo modInfo;
 
+using VRRig = GlobalNamespace::VRRig;
 using namespace CosmeticsLoader;
 using namespace GorillaCosmetics;
 
 using namespace Photon::Pun;
 using namespace Photon::Realtime;
 
-MAKE_HOOK_OFFSETLESS(VRRig_ChangeMaterial, void, GlobalNamespace::VRRig* self, int materialIndex)
+MAKE_HOOK_MATCH(VRRig_ChangeMaterial, &VRRig::ChangeMaterial, void, GlobalNamespace::VRRig* self, int materialIndex)
 {
     VRRig_ChangeMaterial(self, materialIndex);
     // postfix
@@ -62,7 +64,7 @@ MAKE_HOOK_OFFSETLESS(VRRig_ChangeMaterial, void, GlobalNamespace::VRRig* self, i
     CosmeticUtils::ChangeMaterial(self, materialIndex, material);
 }
 
-MAKE_HOOK_OFFSETLESS(VRRig_Start, void, GlobalNamespace::VRRig* self)
+MAKE_HOOK_MATCH(VRRig_Start, &VRRig::Start, void, GlobalNamespace::VRRig* self)
 {
     VRRig_Start(self);
     // postfix
@@ -95,7 +97,7 @@ MAKE_HOOK_OFFSETLESS(VRRig_Start, void, GlobalNamespace::VRRig* self)
     CosmeticUtils::ChangeMaterial(self, setMatIndex, material);
 }
 
-MAKE_HOOK_OFFSETLESS(VRRig_UpdateCosmetics, void, GlobalNamespace::VRRig* self, Il2CppString* newBadge, Il2CppString* newFace, Il2CppString* newHat, PhotonMessageInfo info)
+MAKE_HOOK_MATCH(VRRig_UpdateCosmetics, &VRRig::UpdateCosmetics, void, GlobalNamespace::VRRig* self, Il2CppString* newBadge, Il2CppString* newFace, Il2CppString* newHat, PhotonMessageInfo info)
 {
     std::string hatString = to_utf8(csstrtostr(newHat));
     std::string hat = "";
@@ -162,7 +164,7 @@ MAKE_HOOK_OFFSETLESS(VRRig_UpdateCosmetics, void, GlobalNamespace::VRRig* self, 
     else getLogger().error("Player and Owner were not equal");
 }
 
-MAKE_HOOK_OFFSETLESS(VRRig_LocalUpdateCosmetics, void, GlobalNamespace::VRRig* self, Il2CppString* newBadge, Il2CppString* newFace, Il2CppString* newHat)
+MAKE_HOOK_MATCH(VRRig_LocalUpdateCosmetics, &VRRig::LocalUpdateCosmetics, void, GlobalNamespace::VRRig* self, Il2CppString* newBadge, Il2CppString* newFace, Il2CppString* newHat)
 {
     std::string hatString = to_utf8(csstrtostr(newHat));
     std::string hat = "";
@@ -214,7 +216,7 @@ MAKE_HOOK_OFFSETLESS(VRRig_LocalUpdateCosmetics, void, GlobalNamespace::VRRig* s
     }
 }
 
-MAKE_HOOK_OFFSETLESS(VRRig_RequestCosmetics, void, GlobalNamespace::VRRig* self, PhotonMessageInfo info)
+MAKE_HOOK_MATCH(VRRig_RequestCosmetics, &VRRig::RequestCosmetics, void, GlobalNamespace::VRRig* self, PhotonMessageInfo info)
 {
     // we need to change behaviour on this method too, because otherwise the initial values will not be correct
     PhotonView* photonView = self->get_photonView();
@@ -280,7 +282,7 @@ MAKE_HOOK_OFFSETLESS(VRRig_RequestCosmetics, void, GlobalNamespace::VRRig* self,
 }
 
 
-MAKE_HOOK_OFFSETLESS(VRRig_InitializeNoobMaterial, void, GlobalNamespace::VRRig* self, float red, float green, float blue, PhotonMessageInfo info)
+MAKE_HOOK_MATCH(VRRig_InitializeNoobMaterial, &VRRig::InitializeNoobMaterial, void, GlobalNamespace::VRRig* self, float red, float green, float blue, PhotonMessageInfo info)
 {
     float maxVal = UnityUtils::max(red, green, blue);
 
@@ -332,21 +334,18 @@ extern "C" void load()
 
     INFO("Installing Hooks...");
 
-    INSTALL_HOOK_OFFSETLESS(logger, VRRig_ChangeMaterial, il2cpp_utils::FindMethodUnsafe("", "VRRig", "ChangeMaterial", 1));
-    INSTALL_HOOK_OFFSETLESS(logger, VRRig_Start, il2cpp_utils::FindMethodUnsafe("", "VRRig", "Start", 0));
-    INSTALL_HOOK_OFFSETLESS(logger, VRRig_LocalUpdateCosmetics, il2cpp_utils::FindMethodUnsafe("", "VRRig", "LocalUpdateCosmetics", 3));
-    INSTALL_HOOK_OFFSETLESS(logger, VRRig_UpdateCosmetics, il2cpp_utils::FindMethodUnsafe("", "VRRig", "UpdateCosmetics", 4));
-    INSTALL_HOOK_OFFSETLESS(logger, VRRig_RequestCosmetics, il2cpp_utils::FindMethodUnsafe("", "VRRig", "RequestCosmetics", 1));
-    INSTALL_HOOK_OFFSETLESS(logger, VRRig_InitializeNoobMaterial, il2cpp_utils::FindMethodUnsafe("", "VRRig", "InitializeNoobMaterial", 4));
+    INSTALL_HOOK(logger, VRRig_ChangeMaterial);
+    INSTALL_HOOK(logger, VRRig_Start);
+    INSTALL_HOOK(logger, VRRig_LocalUpdateCosmetics);
+    INSTALL_HOOK(logger, VRRig_UpdateCosmetics);
+    INSTALL_HOOK(logger, VRRig_RequestCosmetics);
+    INSTALL_HOOK(logger, VRRig_InitializeNoobMaterial);
 
     INFO("Installed Hooks!");
 
     INFO("Registering custom types...");
 
-    custom_types::Register::RegisterType<MaterialPreviewButton>();
-    custom_types::Register::RegisterType<HatPreviewButton>();
-    custom_types::Register::RegisterTypes<HatRackSelector, HatRackSelectorButton>();
-    custom_types::Register::RegisterType<NeonButton>();
+    custom_types::Register::AutoRegister();
 
     INFO("Registered custom types!");
 

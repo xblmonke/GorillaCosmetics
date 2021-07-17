@@ -1,6 +1,6 @@
 #include "Types/Selector/HatRackSelector.hpp"
 #include "logging.hpp"
-DEFINE_TYPE(GorillaCosmetics::HatRackSelector);
+DEFINE_TYPE(GorillaCosmetics, HatRackSelector);
 
 using namespace UnityEngine;
 

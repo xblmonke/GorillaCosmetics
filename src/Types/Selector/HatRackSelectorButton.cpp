@@ -18,9 +18,7 @@ using namespace UnityEngine;
 using namespace GlobalNamespace;
 using namespace Photon::Pun;
 
-DEFINE_TYPE(GorillaCosmetics::HatRackSelectorButton);
-
-bool GorillaCosmetics::HatRackSelectorButton::canPress = true;
+DEFINE_TYPE(GorillaCosmetics, HatRackSelectorButton);
 
 using namespace UnityEngine;
 
@@ -41,13 +39,13 @@ namespace GorillaCosmetics
     void HatRackSelectorButton::OnTriggerEnter(Collider* collider)
     {
         // if cooldown not passed
-        if (!canPress) return;
+        if (!canPress()) return;
 
         // normal interaction with colliders
         GorillaTriggerColliderHandIndicator* handIndicator = collider->GetComponentInParent<GorillaTriggerColliderHandIndicator*>();
         if (handIndicator && selector)
 	    {
-            canPress = false;
+            canPress() = false;
 		    GorillaTriggerColliderHandIndicator* component = collider->GetComponent<GorillaTriggerColliderHandIndicator*>();
 
             // based on next bool go to next or previous
@@ -73,7 +71,7 @@ namespace GorillaCosmetics
                 {
                     usleep(1000);
                 }
-                canPress = true;
+                canPress() = true;
             });
             rePress.detach();
 	    }

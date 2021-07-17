@@ -25,17 +25,15 @@ using namespace UnityEngine;
 using namespace GlobalNamespace;
 using namespace Photon::Pun;
 
-DEFINE_TYPE(GorillaCosmetics::MaterialPreviewButton);
-
-bool GorillaCosmetics::MaterialPreviewButton::canPress = true;
+DEFINE_TYPE(GorillaCosmetics, MaterialPreviewButton);
 
 void GorillaCosmetics::MaterialPreviewButton::OnTriggerEnter(Collider* collider)
 {
-    if (!canPress) return;
+    if (!canPress()) return;
     GorillaTriggerColliderHandIndicator* handIndicator = collider->GetComponentInParent<GorillaTriggerColliderHandIndicator*>();
     if (handIndicator)
 	{
-        canPress = false;
+        canPress() = false;
 		GorillaTriggerColliderHandIndicator* component = collider->GetComponent<GorillaTriggerColliderHandIndicator*>();
 		if (!material) 
         {
@@ -77,7 +75,7 @@ void GorillaCosmetics::MaterialPreviewButton::OnTriggerEnter(Collider* collider)
             {
                 usleep(1000);
             }
-            canPress = true;
+            canPress() = true;
         });
 
         rePress.detach();
