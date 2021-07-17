@@ -12,13 +12,13 @@
   "dependencies": [
     {
       "id": "monkecodegen",
-      "version": ">=0.6.0",
-      "downloadIfMissing": "https://github.com/RedBrumbler/MonkeCodegen/releases/download/0.6.0/MonkeCodegen.qmod"
+      "version": ">=0.7.4",
+      "downloadIfMissing": "https://github.com/RedBrumbler/MonkeCodegen/releases/download/v0.7.4/MonkeCodegen.qmod"
     },
     {
       "id": "gorillautils",
-      "version": ">=0.1.9",
-      "downloadIfMissing": "https://github.com/RedBrumbler/GorillaUtils/releases/latest/download/GorillaUtils.qmod"
+      "version": ">=0.2.2",
+      "downloadIfMissing": "https://github.com/RedBrumbler/GorillaUtils/releases/download/v0.2.2/GorillaUtils.qmod"
     }
   ],
   "modFiles": [
