@@ -9,7 +9,9 @@
 #include "quest-cosmetic-loader/shared/CosmeticLoader.hpp"
 
 #include "Types/Material/MaterialPreview.hpp"
+#include "Types/Material/MaterialPreviewButton.hpp"
 #include "Types/Hat/HatPreview.hpp"
+#include "Types/Hat/HatPreviewButton.hpp"
 
 #include "Types/Selector/HatRackSelector.hpp"
 #include "Types/Selector/HatRackSelectorButton.hpp"
@@ -405,6 +407,10 @@ namespace GorillaCosmetics
         
         mirror->SetActive(true);
         HatRack->SetActive(true);
+
+        GorillaCosmetics::HatPreviewButton::canPress() = true;
+        GorillaCosmetics::MaterialPreviewButton::canPress() = true;
+        GorillaCosmetics::HatRackSelectorButton::canPress() = true;
         Loaded = true;
         Loading = false;
     }
